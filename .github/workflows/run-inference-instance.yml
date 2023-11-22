@@ -9,8 +9,12 @@ on:
       denominator:
         required: true
         type: number
+      model-id:
+        required: true
+        type: string
 
 env:
+  # MODEL_ID env variable is used when this script is run from the actual model repo.
   MODEL_ID: ${{ github.event.repository.name }}
   SHA: ${{ github.sha }}
 
@@ -95,10 +99,10 @@ jobs:
           index=$((numerator - 1))
           
           source activate
-          echo "Sample model id selected: $MODEL_ID"
-          ersilia fetch $MODEL_ID
-          ersilia serve $MODEL_ID
-          echo "$MODEL_ID succesfully fetched and served"
+          echo "Sample model id selected: ${{ inputs.model-id }}"
+          ersilia fetch ${{ inputs.model-id }}
+          ersilia serve ${{ inputs.model-id }}
+          echo "${{ inputs.model-id }} succesfully fetched and served"
           ersilia api -i $(printf "partition_%04d.csv" $index) -o ../${SHA}$(printf "_%04d.csv" $numerator)
           
-          aws s3 cp ../${SHA}$(printf "_%04d.csv" $numerator) s3://isaura-bucket/out/$MODEL_ID/${SHA}$(printf "_%04d.csv" $numerator)
+          aws s3 cp ../${SHA}$(printf "_%04d.csv" $numerator) s3://isaura-bucket/out/${{ inputs.model-id }}/${SHA}$(printf "_%04d.csv" $numerator)
