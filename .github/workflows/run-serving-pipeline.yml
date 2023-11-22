@@ -1,0 +1,34 @@
+name: Run Serving Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        required: true
+        type: string
+      sha:
+        required: true
+        type: string
+
+  
+  # workflow_run:
+  #   workflows: ["Run Inference Pipeline"]
+  #   types:
+  #     - completed
+
+permissions:
+  contents: read
+
+jobs:
+  matrix-inference:
+    strategy:
+      matrix:
+        partition: [
+          1,2
+        ]
+    uses: ./.github/workflows/serve-to-dynamo.yml
+    with:
+      model: ${{ inputs.model }}
+      sha: ${{ inputs.sha }}
+      partition: ${{ matrix.partition }}
+    secrets: inherit

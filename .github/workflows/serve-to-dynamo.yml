@@ -1,0 +1,53 @@
+name: Serve Predictions to DynamoDB
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        required: true
+        type: string
+      sha:
+        required: true
+        type: string
+      partition:
+        required: true
+        type: number
+
+  workflow_call:
+    inputs:
+      model:
+        required: true
+        type: string
+      sha:
+        required: true
+        type: string
+      partition:
+        required: true
+        type: number
+
+jobs:
+  serve:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout repo content
+        uses: actions/checkout@v4 # checkout repo content
+      
+      - name: setup python
+        uses: actions/setup-python@v4 # setup python environment
+        with:
+          python-version: '3.10'
+      
+      - name: configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+           aws-region: eu-central-1
+      
+      - name: install venv
+        run: |
+          make install-prod
+
+      - name: serve predictions to dynamodb
+        run: |
+          .venv/bin/python3 scripts/write_predictions_to_dynamodb.py ${{ inputs.model }} ${{ inputs.sha }} ${{ inputs.partition }}

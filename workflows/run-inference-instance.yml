@@ -1,0 +1,104 @@
+name: Perform Inference Instance
+
+on:
+  workflow_call:
+    inputs:
+      numerator:
+        required: true
+        type: number
+      denominator:
+        required: true
+        type: number
+
+env:
+  MODEL_ID: ${{ github.event.repository.name }}
+  SHA: ${{ github.sha }}
+
+jobs:
+  infer-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print system details
+        run: sudo lshw -short
+      
+      - name: Check into ersilia-os/ersilia repo 
+        uses: actions/checkout@v3
+        with:
+          repository: ersilia-os/ersilia
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+           aws-region: eu-central-1
+      
+      - name: Get input library
+        run: |
+          aws s3 cp s3://isaura-bucket/reference_library.csv reference_library.csv
+
+      - name: Split library by partition variables
+        run: |
+          numerator=${{ inputs.numerator }}
+          denominator=${{ inputs.denominator }}
+          filename="reference_library.csv"
+          
+          ## Total # lines in given reference library
+          total_lines=$(wc -l < "$filename")
+          echo $total_lines
+          
+          # Determine the # of file lines per partition
+          ((lines_per_file = (total_lines + $denominator-1) / $denominator))
+
+          # Split the file
+          split -l $lines_per_file -a 4 -d --additional-suffix=.csv "$filename" partition_
+          
+          # Add 'smiles' to header of all partition files beyond the first
+          for (( i=1; i<$denominator; i++ ))
+          do
+            partition=$(printf "partition_%04d.csv" $i)
+            sed -i '1i smiles' "$partition"
+          done
+
+          # List files in dir
+          ls
+
+      - name: Add conda to system path
+        run: echo $CONDA/bin >> $GITHUB_PATH
+
+      - name: Source conda
+        run: source $CONDA/etc/profile.d/conda.sh
+
+      - name: Set Python to 3.10.10
+        run:
+         conda install -y python=3.10.10
+
+      - name: Install dependencies
+        run: |
+          source activate
+          conda init
+          conda install git-lfs -c conda-forge
+          git-lfs install
+          conda install gh -c conda-forge
+          
+      - name: Install ersilia
+        run: |
+          source activate
+          python --version
+          echo "After conda init"
+          conda init
+          python -m pip install -e .[test]
+          
+      - name: Predict partition output and upload
+        run: |
+          numerator=${{ inputs.numerator }}
+          index=$((numerator - 1))
+          
+          source activate
+          echo "Sample model id selected: $MODEL_ID"
+          ersilia fetch $MODEL_ID
+          ersilia serve $MODEL_ID
+          echo "$MODEL_ID succesfully fetched and served"
+          ersilia api -i $(printf "partition_%04d.csv" $index) -o ../${SHA}$(printf "_%04d.csv" $numerator)
+          
+          aws s3 cp ../${SHA}$(printf "_%04d.csv" $numerator) s3://isaura-bucket/out/$MODEL_ID/${SHA}$(printf "_%04d.csv" $numerator)

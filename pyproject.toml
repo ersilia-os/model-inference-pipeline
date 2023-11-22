@@ -1,0 +1,87 @@
+[tool.poetry]
+name = "ersilia_precalc_poc"
+version = "0.1.0"
+description = "POC Repository to experiment with pre-calculating outputs for the Ersilia Model Hub"
+authors = ["Kartikey Vyas <kartikeyvyas23@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+docker = "^6.1.3"
+bentoml = "^1.1.0"
+urllib3 = "^1"
+pandas = "^2.0.3"
+boto3 = "^1.28.26"
+pydantic = "^1"
+pandera = "^0.16.1"
+s3fs = "^2023.10.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.0"
+black = "^23.7.0"
+ruff = "^0.0.278"
+localstack = "^2.1.0"
+ipykernel = "^6.25.1"
+jupyter = "^1.0.0"
+pre-commit = "^3.3.3"
+mypy = "^1.5.1"
+ersilia = {path = "ersilia", develop = true}
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[tool.black]
+line-length = 120
+
+[tool.ruff]
+line-length = 120
+
+# rules to enable/ignore
+select = [
+    # pyflakes
+    "F",
+    # pycodestyle
+    "E",
+    "W",
+    # type annotations
+    "ANN",
+    # pep8-naming
+    "N",
+    # bugbear
+    "B",
+    # isort
+    "I",
+    # flake8-unused-arguments
+    "ARG",
+    # flake8-self
+    "SLF",
+    # ruff-specific
+    "RUF",
+]
+ignore = [
+    # allow untyped self and cls args, and no return type from dunder methods
+    "ANN101",
+    "ANN102",
+    "ANN204",
+    # allow == True because pandas dataframes overload equality
+    "E712",
+]
+# first-party imports for sorting
+src = ["."]
+fix = true
+show-fixes = true
+
+[tool.ruff.per-file-ignores]
+# imports in __init__.py don't need to be used in __init__.py
+"__init__.py" = ["F401"]
+# test functions don't need return types
+"tests/*" = ["ANN201", "ANN202"]
+
+[tool.ruff.flake8-annotations]
+# allow *args: Any, **kwargs: Any
+allow-star-arg-any = true
