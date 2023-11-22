@@ -30,7 +30,19 @@ jobs:
     uses: ./.github/workflows/run-inference-instance.yml
     with:
       numerator: ${{ matrix.numerator }}
-      denominator: 50
+      denominator: 1000
       model-id: ${{ inputs.model-id }}
       SHA: ${{ github.sha }}
     secrets: inherit
+  save-outputs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Save outputs
+        run: |
+          echo "{model-id: ${{ inputs.model-id }}, SHA: ${{ github.sha }}}" >> output.json
+      
+      - name: Upload outputs
+        uses: actions/upload-artifact@v2
+        with:
+          name: inference-run-output
+          path: "./output.json"
