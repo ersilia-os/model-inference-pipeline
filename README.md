@@ -1,27 +1,18 @@
-# gdi-ersilia-project
-POC Repository to experiment with pre-calculating outputs for the Ersilia Model Hub
+# Ersilia Model Precalculation Pipeline
+This repository contains code and github workflows for precalculating and storing Ersilia model predictions in AWS.
 
-## Requirements
-- Linux or MacOS
-- python 3.10 installation (recommend using pyenv)
+See [CONTRIBUTING.md](CONTRIBUTING.md) to get started working on this repo.
 
-Requirements for the model hub
-- git lfs
-- docker
+## Github Actions Workflows
 
-Set up virtual environment with `make install`, and activate it with `source .venv/bin/activate`
+### Prediction
 
-We use `poetry` for virtual env creation and dependency management
+During this workflow, we call the Ersilia model hub for a given model ID and generate predictions on the reference library. The predictions are saved as CSV files in S3.
 
-## Generating example pre-calculations
+### Serving
 
-### Fetch input data
-Manually download the [reference file](https://github.com/ersilia-os/groverfeat/raw/main/data/reference_library.csv) and save it to a directory of this repo named `data/`. The file is ~100MB.
+This workflow reads the generated predictions from S3, validates and formats the data, then finally writes it in batches to DynamoDB.
 
-You can take a subset of this data or run the whole thing.
+### Full Precalculation Pipeline
 
-Can use scripts/generate_predictions.py, or just use the ersilia CLI.
-
-```
-python scripts/generate_predictions.py <path_to_input> <path_of_output>
-```
+The full pipeline calls the predict and serve actions in sequence. Both jobs are parallelised across up to 50 workers as they are both compute-intensive processes.
