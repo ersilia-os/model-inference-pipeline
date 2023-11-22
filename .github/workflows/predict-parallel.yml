@@ -23,7 +23,7 @@ jobs:
          41,42,43,44,45,46,47,48,49,50
         ]
 
-    uses: ./.github/workflows/run-inference.yml
+    uses: ./.github/workflows/predict.yml
     with:
       numerator: ${{ matrix.numerator }}
       denominator: 50

@@ -29,7 +29,7 @@ jobs:
         # ]
         numerator: [1,2]
 
-    uses: ./.github/workflows/run-inference.yml
+    uses: ./.github/workflows/predict.yml
     with:
       numerator: ${{ matrix.numerator }}
       denominator: 1000
@@ -51,7 +51,7 @@ jobs:
         # ]
         partition: [1,2]
 
-    uses: ./.github/workflows/serve-to-dynamo.yml
+    uses: ./.github/workflows/serve.yml
     with:
       model: ${{ inputs.model-id }}
       sha: ${{ github.sha }}
