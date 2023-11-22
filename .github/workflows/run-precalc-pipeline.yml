@@ -39,7 +39,7 @@ jobs:
     secrets: inherit
 
   matrix-serving:
-
+    needs: matrix-inference
     strategy:
       matrix:
         # partition: [
