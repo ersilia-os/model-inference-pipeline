@@ -17,32 +17,38 @@ permissions:
 jobs:
   matrix-inference:
     if: github.repository != 'ersilia-os/eos-template'
+
     strategy:
       matrix:
-        #numerator: [
+        # numerator: [
         #  1,2,3,4,5,6,7,8,9,10,
         #  11,12,13,14,15,16,17,18,19,20,
         #  21,22,23,24,25,26,27,28,29,30,
         #  31,32,33,34,35,36,37,38,39,40,
         #  41,42,43,44,45,46,47,48,49,50
-        #]
+        # ]
         numerator: [1,2]
+
     uses: ./.github/workflows/run-inference-instance.yml
     with:
       numerator: ${{ matrix.numerator }}
       denominator: 1000
       model-id: ${{ inputs.model-id }}
       SHA: ${{ github.sha }}
+
     secrets: inherit
+
   save-outputs:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Save outputs
+      - name: Save output artifact
         run: |
-          echo "{model-id: ${{ inputs.model-id }}, SHA: ${{ github.sha }}}" >> output.json
+          echo "${{ inputs.model-id }}\n${{ github.sha }}}" >> model-id_sha.txt
       
-      - name: Upload outputs
+      - name: Upload output artifact
         uses: actions/upload-artifact@v2
         with:
-          name: inference-run-output
-          path: "./output.json"
+          name: last-inference-run
+          path: "./model-id_sha.txt"
+
