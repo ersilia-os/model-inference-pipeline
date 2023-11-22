@@ -111,3 +111,9 @@ jobs:
           ersilia api -i $(printf "partition_%04d.csv" $index) -o ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
           
           aws s3 cp ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator) s3://isaura-bucket/out/${{ inputs.model-id }}/${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: inference-run-output
+          path: path-to-your-artifact
