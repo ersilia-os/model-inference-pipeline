@@ -26,4 +26,5 @@ jobs:
     with:
       numerator: ${{ matrix.numerator }}
       denominator: 50
+      model-id: 'eos4f95'
     secrets: inherit
