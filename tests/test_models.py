@@ -4,7 +4,7 @@ from pandera import check_types
 from pandera.errors import SchemaError
 from pandera.typing import DataFrame
 
-from ersilia_precalc_poc.models import BasePredictionSchema, Prediction
+from precalculator.models import BasePredictionSchema, Prediction
 
 
 def test_prediction():

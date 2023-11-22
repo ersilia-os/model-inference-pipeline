@@ -1,5 +1,5 @@
 PYTHON_BINARY := python3
-PROJECT_NAME := ersilia_precalc_poc
+PROJECT_NAME := precalculator
 TEST_DIR := tests
 VIRTUAL_ENV := .venv
 VIRTUAL_BIN := $(VIRTUAL_ENV)/bin

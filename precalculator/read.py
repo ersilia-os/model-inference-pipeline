@@ -1,6 +1,6 @@
 import pandas as pd
 
-from ersilia_precalc_poc.models import BasePredictionSchema, Prediction
+from precalculator.models import BasePredictionSchema, Prediction
 
 # def read_predictions_from_s3(model_id: str, s3_config:) -> DataFrame[PredictionSchema]
 

@@ -6,19 +6,12 @@ from typing import List
 
 import boto3
 
-from ersilia_precalc_poc.models import Prediction
+from precalculator.models import Prediction
 
 logger = logging.Logger("DynamoDBWriter")
 
 
-# def format_precalcs_for_dynamodb(precalcs: List[Prediction]) -> None:
-#     pass
-
-
-# here are a few different ways we could write a large number of predictions to dynamodb
 def write_precalcs_batch_writer(dynamodb_table: str, precalcs: List[Prediction]) -> None:
-    # todo: timestamp/versioning for predictions written to dynamo
-
     dynamodb = boto3.resource("dynamodb")
     table = dynamodb.Table(dynamodb_table)
 
@@ -35,9 +28,3 @@ def write_precalcs_batch_writer(dynamodb_table: str, precalcs: List[Prediction])
                     "Timestamp": str(time.time()),
                 }
             )
-
-
-# def write_precalcs_manual_batching(dynamodb_table: str, precalcs: List[Prediction]):
-#     # dynamodb = boto3.client("dynamodb")
-#     print("unimplemented")
-#     pass

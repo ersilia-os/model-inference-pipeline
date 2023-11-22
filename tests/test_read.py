@@ -1,7 +1,7 @@
 import pandas as pd
 
-from ersilia_precalc_poc.models import Prediction
-from ersilia_precalc_poc.read import get_predictions_from_dataframe
+from precalculator.models import Prediction
+from precalculator.read import get_predictions_from_dataframe
 
 fixture = pd.DataFrame(
     {
