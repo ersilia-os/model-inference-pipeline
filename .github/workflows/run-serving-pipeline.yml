@@ -9,18 +9,37 @@ on:
       sha:
         required: true
         type: string
-
   
-  # workflow_run:
-  #   workflows: ["Run Inference Pipeline"]
-  #   types:
-  #     - completed
+  workflow_run:
+    workflows: ["Run Inference Pipeline"]
+    types:
+      - completed
 
 permissions:
   contents: read
 
 jobs:
+  download-artifact:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: last-inference-run
+      - name: Emit job outputs
+        id: emit
+        run: |
+          modelid=$(head -n 1 ./model-id_sha.txt)
+          sha=$(tail -n 1 ./model-id_sha.txt)
+          echo "::set-output name=model-id::${modelid}"
+          echo "::set-output name=sha::${sha}"
+
+    outputs:
+      model-id: ${{ steps.emit.outputs.model-id }}
+      sha: ${{ steps.emit.outputs.sha }}
+          
   matrix-inference:
+    needs: download-artifact
     strategy:
       matrix:
         partition: [
@@ -28,7 +47,7 @@ jobs:
         ]
     uses: ./.github/workflows/serve-to-dynamo.yml
     with:
-      model: ${{ inputs.model }}
-      sha: ${{ inputs.sha }}
+      model: ${{ needs.download-artifact.outputs.model-id }}
+      sha: ${{ needs.download-artifact.outputs.sha }}
       partition: ${{ matrix.partition }}
     secrets: inherit
