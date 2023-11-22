@@ -1,4 +1,4 @@
-name: Perform Inference Instance
+name: Generate Predictions
 
 on:
   workflow_call:
