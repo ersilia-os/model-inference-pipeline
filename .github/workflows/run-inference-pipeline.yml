@@ -17,9 +17,6 @@ permissions:
 jobs:
   matrix-inference:
     if: github.repository != 'ersilia-os/eos-template'
-    outputs:
-      model-id: ${{ inputs.model-id }}
-      SHA: ${{ github.sha }}
     strategy:
       matrix:
         #numerator: [
