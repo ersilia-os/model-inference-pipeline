@@ -3,15 +3,14 @@ import os
 
 import pandas as pd
 
-from ersilia_precalc_poc.read import get_predictions_from_dataframe
-from ersilia_precalc_poc.test import write_test_rows
-from ersilia_precalc_poc.write import write_precalcs_batch_writer
+from precalculator.read import get_predictions_from_dataframe
+from precalculator.test import write_test_rows
+from precalculator.write import write_precalcs_batch_writer
 
 # aws region: eu-central-1
 # dynamodb table name: precalculations-poc
 
 # hard code for now
-# TODO: use .env file for config
 DYNAMODB_TABLE_NAME = "precalculations-poc"
 PREDICTIONS_S3_PREFIX = "s3://isaura-bucket/out/"
 

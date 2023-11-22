@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "ersilia_precalc_poc"
+name = "precalculator"
 version = "0.1.0"
-description = "POC Repository to experiment with pre-calculating outputs for the Ersilia Model Hub"
+description = "Repository to pre-calculate model outputs for the Ersilia Model Hub"
 authors = ["Kartikey Vyas <kartikeyvyas23@gmail.com>"]
 license = "MIT"
 readme = "README.md"
