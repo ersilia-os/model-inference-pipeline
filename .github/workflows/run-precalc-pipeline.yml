@@ -33,7 +33,7 @@ jobs:
     with:
       numerator: ${{ matrix.numerator }}
       # denominator: 1000
-      denoninator: 50
+      denominator: 50
       model-id: ${{ inputs.model-id }}
       SHA: ${{ github.sha }}
 
