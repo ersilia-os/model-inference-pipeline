@@ -19,9 +19,9 @@ on:
 env:
   # MODEL_ID env variable is used when this script is run from the individual model repo.
   # If placing the script in the individual repo, find and replace '${{ inputs.model-id }}' with '$MODEL_ID'
-  MODEL_ID: ${{ github.event.repository.name }}
+  # MODEL_ID: ${{ github.event.repository.name }}
   # Replace ${{ inputs.SHA }} with ${SHA} in the individual model repo case.
-  SHA: ${{ github.sha }}
+  # SHA: ${{ github.sha }}
 
 jobs:
   infer-and-upload:
@@ -109,5 +109,5 @@ jobs:
           ersilia serve ${{ inputs.model-id }}
           echo "${{ inputs.model-id }} succesfully fetched and served"
           ersilia api -i $(printf "partition_%04d.csv" $index) -o ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
-          
+
           aws s3 cp ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator) s3://isaura-bucket/out/${{ inputs.model-id }}/${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
