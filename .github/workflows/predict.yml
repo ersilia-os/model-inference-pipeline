@@ -16,7 +16,7 @@ on:
         required: true
         type: string
 
-env:
+# env:
   # MODEL_ID env variable is used when this script is run from the individual model repo.
   # If placing the script in the individual repo, find and replace '${{ inputs.model-id }}' with '$MODEL_ID'
   # MODEL_ID: ${{ github.event.repository.name }}
