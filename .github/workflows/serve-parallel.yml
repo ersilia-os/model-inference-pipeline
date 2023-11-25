@@ -2,21 +2,21 @@ name: Run Serving in Parallel
 
 on:
   repository_dispatch:
-    types: ["inference-complete"]
+    types: [inference-complete]
 
-  workflow_dispatch:
-    inputs:
-      model:
-        required: true
-        type: string
-      sha:
-        required: true
-        type: string
+  # workflow_dispatch:
+  #   inputs:
+  #     model:
+  #       required: true
+  #       type: string
+  #     sha:
+  #       required: true
+  #       type: string
   
-  workflow_run:
-    workflows: ["Run Inference in Parallel"]
-    types:
-      - completed
+  # workflow_run:
+  #   workflows: ["Run Inference in Parallel"]
+  #   types:
+  #     - completed
 
 permissions:
   contents: read
