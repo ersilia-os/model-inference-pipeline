@@ -43,4 +43,4 @@ jobs:
           token: ${{ github.token }}
           repository: ersilia-os/model-inference-pipeline
           event-type: inference-complete
-          client-payload: '{"model-id": "${{ inputs.model-id }}", "sha": "${{ github.sha }}'
+          client-payload: '{"model-id": "${{ inputs.model-id }}", "sha": "${{ github.sha }}"}'
