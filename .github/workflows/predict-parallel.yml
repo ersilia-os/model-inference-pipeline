@@ -42,5 +42,5 @@ jobs:
         with:
           token: ${{ secrets.API_TOKEN_GITHUB }}
           repository: ersilia-os/model-inference-pipeline
-          event-type: inference-complete
+          event-type: dispatch-serving-after-prediction
           client-payload: '{"model-id": "${{ inputs.model-id }}", "sha": "${{ github.sha }}"}'
