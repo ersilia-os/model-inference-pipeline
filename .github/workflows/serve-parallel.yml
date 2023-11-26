@@ -1,5 +1,4 @@
 name: Run Serving in Parallel
-
 on:
   repository_dispatch:
     types: [inference-complete]
