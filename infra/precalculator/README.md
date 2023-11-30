@@ -56,3 +56,15 @@ command.
  * `cdk docs`        open CDK documentation
 
 Enjoy!
+
+
+Test event for API Gateway
+```
+{
+    "modelId": "examplemodel",
+    "inputKeyArray":[
+            "PCQFQFRJSWBMEL-UHFFFAOYSA-N",
+            "MRSBJIAZTHGJAP-UHFFFAOYSA-N"
+        ]
+}
+```

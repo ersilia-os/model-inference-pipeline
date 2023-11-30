@@ -31,7 +31,12 @@ def handler(event, context):
         try:
             dynamo_response = dynamodb.batch_get_item(RequestItems=batch_keys)
         except Exception:
-            return {"statusCode": 500}  # catch-all internal server error for any exceptions
+            return {
+                "isBase64Encoded": False,
+                "statusCode": 500,
+                "headers": {"Content-Type": "application/json"},
+                "body": json.dumps({}),
+            }  # catch-all internal server error for any exceptions
 
         for response_table, response_items in dynamo_response.items():
             logger.info("Got %s items from %s.", len(response_items), response_table)
@@ -46,11 +51,17 @@ def handler(event, context):
         }
 
         return {
+            "isBase64Encoded": False,
             "statusCode": 200,
             "headers": {"Content-Type": "application/json"},
-            "body": results,
+            "body": json.dumps(results),
         }
     else:
         logging.info("## Received request without a payload")
 
-        return {"statusCode": 204, "body": {}}  # no content
+        return {
+            "isBase64Encoded": False,
+            "statusCode": 204,
+            "headers": {"Content-Type": "application/json"},
+            "body": json.dumps({}),
+        }
