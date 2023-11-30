@@ -5,6 +5,7 @@ import aws_cdk as cdk
 
 from precalculator.precalculator_stack import PrecalculatorStack
 
+env_Ersilia_EU = cdk.Environment(account="443413310934", region="eu-central-1")
 
 app = cdk.App()
 PrecalculatorStack(app, "PrecalculatorStack",
@@ -20,7 +21,7 @@ PrecalculatorStack(app, "PrecalculatorStack",
     # Uncomment the next line if you know exactly what Account and Region you
     # want to deploy the stack to. */
 
-    #env=cdk.Environment(account='123456789012', region='us-east-1'),
+    env=env_Ersilia_EU,
 
     # For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
     )

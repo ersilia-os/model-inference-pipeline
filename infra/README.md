@@ -1,9 +1,9 @@
 # Ersilia Precalculation Stack
 
-Document infrastructure here...
+Using AWS CDK as the simplest and easiest to maintain IaC option for Ersilia members.
 
-options:
+Install the AWS CDK Toolkit globally using npm
 
-- AWS CDK
-- boto3
-- Terraform
+```
+npm install -g aws-cdk
+```
