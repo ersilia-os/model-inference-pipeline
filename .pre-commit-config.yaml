@@ -9,11 +9,13 @@ repos:
         entry: .venv/bin/ruff
         language: system
         types: [python]
+        exclude: infra/
       - id: mypy
         name: mypy
         entry: .venv/bin/mypy
         language: system
         types: [python]
+        exclude: infra/
       - id: black
         name: black
         entry: .venv/bin/black
