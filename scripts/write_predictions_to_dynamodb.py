@@ -1,18 +1,21 @@
 import argparse
 import os
+from pathlib import Path
 
 import pandas as pd
+from dotenv import load_dotenv
 
 from precalculator.read import get_predictions_from_dataframe
 from precalculator.test import write_test_rows
 from precalculator.write import write_precalcs_batch_writer
 
-# aws region: eu-central-1
-# dynamodb table name: precalculations-poc
+dotenv_path = Path("./config/stack.env")  # relative to root of git repo
+load_dotenv(dotenv_path=dotenv_path)
 
-# hard code for now
-DYNAMODB_TABLE_NAME = "precalculations-poc"
-PREDICTIONS_S3_PREFIX = "s3://isaura-bucket/out/"
+BUCKET_NAME = str(os.getenv("S3_BUCKET_NAME"))
+PREDICTIONS_S3_PREFIX = os.path.join(BUCKET_NAME, "out")
+
+DYNAMODB_TABLE_NAME = str(os.getenv("DYNAMODB_TABLE_NAME"))
 
 
 def build_parser() -> argparse.ArgumentParser:
