@@ -30,6 +30,7 @@ BUCKET_NAME = str(os.getenv("S3_BUCKET_NAME"))
 TABLE_NAME = str(os.getenv("DYNAMODB_TABLE_NAME"))
 HANDLER_NAME = str(os.getenv("API_HANDLER_LAMBDA_NAME"))
 ENDPOINT_NAME = str(os.getenv("API_ENDPOINT_NAME"))
+API_KEY_NAME = str(os.getenv("API_KEY_NAME"))
 
 
 class PrecalculatorStack(Stack):
@@ -76,8 +77,36 @@ class PrecalculatorStack(Stack):
         table.grant_read_data(api_handler)
 
         # API Gateway
-        apigateway.LambdaRestApi(
+        api = apigateway.LambdaRestApi(
             self,
             ENDPOINT_NAME,
+            description="API Endpoint for Precalculations created via CDK",
             handler=api_handler,
+            # regional endpoint, don't use cloudfront
+            endpoint_configuration=apigateway.EndpointConfiguration(
+                types=[apigateway.EndpointType.REGIONAL]
+            ),
+            deploy=True,
+            deploy_options=[
+                apigateway.StageOptions(
+                    stage_name="dev",
+                    description="DEV deployment of Precalcs Endpoint"
+                ),
+                apigateway.StageOptions(
+                    stage_name="prod",
+                    description="PROD deployment of Precalcs Endpoint"
+                )
+            ]
         )
+
+        predictions = api.root.add_resource("predictions")
+        predictions.add_method("GET")
+
+        api.add_api_key(
+            API_KEY_NAME,
+            api_key_name=API_KEY_NAME,
+            description="Default API Key for Precalculations endpoint created via CDK"
+        )
+        
+
+
