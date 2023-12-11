@@ -1,4 +1,6 @@
 # Ersilia Model Precalculation Pipeline
+### A collaboration between [GDI](https://github.com/good-data-institute) and Ersilia
+
 This repository contains code and github workflows for precalculating and storing Ersilia model predictions in AWS.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) to get started working on this repo.
