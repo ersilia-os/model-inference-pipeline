@@ -83,15 +83,10 @@ class PrecalculatorStack(Stack):
             description="API Endpoint for Precalculations created via CDK",
             handler=api_handler,
             # regional endpoint, don't use cloudfront
-            endpoint_configuration=apigateway.EndpointConfiguration(
-                types=[apigateway.EndpointType.REGIONAL]
-            ),
+            endpoint_configuration=apigateway.EndpointConfiguration(types=[apigateway.EndpointType.REGIONAL]),
             deploy=True,
-            deploy_options=apigateway.StageOptions(
-                stage_name="dev",
-                description="DEV deployment of Precalcs Endpoint"
-            ),
-            proxy=False
+            deploy_options=apigateway.StageOptions(stage_name="dev", description="DEV deployment of Precalcs Endpoint"),
+            proxy=False,
         )
 
         predictions = api.root.add_resource("predictions")
@@ -100,8 +95,5 @@ class PrecalculatorStack(Stack):
         api.add_api_key(
             API_KEY_NAME,
             api_key_name=API_KEY_NAME,
-            description="Default API Key for Precalculations endpoint created via CDK"
+            description="Default API Key for Precalculations endpoint created via CDK",
         )
-        
-
-
