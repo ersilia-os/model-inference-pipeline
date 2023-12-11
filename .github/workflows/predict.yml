@@ -44,7 +44,7 @@ jobs:
       
       - name: Get input library
         run: |
-          aws s3 cp s3://isaura-bucket/reference_library.csv reference_library.csv
+          aws s3 cp s3://precalculations-bucket/reference_library.csv reference_library.csv
 
       - name: Split library by partition variables
         run: |
@@ -110,4 +110,4 @@ jobs:
           echo "${{ inputs.model-id }} succesfully fetched and served"
           ersilia api -i $(printf "partition_%04d.csv" $index) -o ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
 
-          aws s3 cp ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator) s3://isaura-bucket/out/${{ inputs.model-id }}/${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
+          aws s3 cp ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator) s3://precalculations-bucket/out/${{ inputs.model-id }}/${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
