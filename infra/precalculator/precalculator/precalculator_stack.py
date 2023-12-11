@@ -87,20 +87,15 @@ class PrecalculatorStack(Stack):
                 types=[apigateway.EndpointType.REGIONAL]
             ),
             deploy=True,
-            deploy_options=[
-                apigateway.StageOptions(
-                    stage_name="dev",
-                    description="DEV deployment of Precalcs Endpoint"
-                ),
-                apigateway.StageOptions(
-                    stage_name="prod",
-                    description="PROD deployment of Precalcs Endpoint"
-                )
-            ]
+            deploy_options=apigateway.StageOptions(
+                stage_name="dev",
+                description="DEV deployment of Precalcs Endpoint"
+            ),
+            proxy=False
         )
 
         predictions = api.root.add_resource("predictions")
-        predictions.add_method("GET")
+        predictions.add_method("GET", api_key_required=True)
 
         api.add_api_key(
             API_KEY_NAME,
