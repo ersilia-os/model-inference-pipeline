@@ -1,3 +1,5 @@
+# ARCHIVED - replaced by predict-parallel.py
+
 name: Run Full Pre-calculation Pipeline
 on:
   workflow_dispatch:
