@@ -13,7 +13,7 @@ dotenv_path = Path("./config/stack.env")  # relative to root of git repo
 load_dotenv(dotenv_path=dotenv_path)
 
 BUCKET_NAME = str(os.getenv("S3_BUCKET_NAME"))
-PREDICTIONS_S3_PREFIX = os.path.join(BUCKET_NAME, "out")
+PREDICTIONS_S3_PREFIX = os.path.join("s3://", BUCKET_NAME, "out")
 
 DYNAMODB_TABLE_NAME = str(os.getenv("DYNAMODB_TABLE_NAME"))
 
