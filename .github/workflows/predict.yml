@@ -50,7 +50,7 @@ jobs:
         run: |
           numerator=${{ inputs.numerator }}
           denominator=${{ inputs.denominator }}
-          filename="reference_library.csv"
+          filename="data/reference_library_100.csv"
           
           ## Total # lines in given reference library
           total_lines=$(wc -l < "$filename")
