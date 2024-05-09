@@ -5,6 +5,9 @@ on:
       model-id:
         required: true
         type: string
+      sample-only:
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -29,6 +32,7 @@ jobs:
       numerator: ${{ matrix.numerator }}
       denominator: 50
       model-id: ${{ inputs.model-id }}
+      sample-only: ${{ inputs.sample-only }}
       SHA: ${{ github.sha }}
 
     secrets: inherit
