@@ -48,10 +48,10 @@ jobs:
       - name: Get input library
         run: |
           if [[ ${{ inputs.sample-only }} ]]; then
-            echo "Running pipeline on subset of reference library"
+            echo "Getting subset of reference library"
             filename="reference_library_100.csv"
           else
-            echo "Running pipeline on whole reference library"
+            echo "Getting whole reference library"
             filename="reference_library.csv"
           fi
           aws s3 cp s3://precalculations-bucket/"$filename" $filename
@@ -60,7 +60,11 @@ jobs:
         run: |
           numerator=${{ inputs.numerator }}
           denominator=${{ inputs.denominator }}
-
+          if [[ ${{ inputs.sample-only }} ]]; then
+            filename="reference_library_100.csv"
+          else
+            filename="reference_library.csv"
+          fi
           
           ## Total # lines in given reference library
           total_lines=$(wc -l < "$filename")
