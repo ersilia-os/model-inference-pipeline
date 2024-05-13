@@ -14,7 +14,7 @@ on:
         type: string
       sample-only:
         required: false
-        type: number
+        type: string
       SHA:
         required: true
         type: string
