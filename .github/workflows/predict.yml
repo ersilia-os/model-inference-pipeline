@@ -14,7 +14,7 @@ on:
         type: string
       sample-only:
         required: false
-        type: string
+        type: number
       SHA:
         required: true
         type: string
@@ -53,7 +53,7 @@ jobs:
         run: |
           if [[ ${{ inputs.sample-only }} ]]; then
             echo "Getting subset of reference library"
-            filename="reference_library_100.csv"
+            filename="reference_library_${{ inputs.sample-only }}.csv"
           else
             echo "Getting whole reference library"
             filename="reference_library.csv"
@@ -65,7 +65,7 @@ jobs:
           numerator=${{ inputs.numerator }}
           denominator=${{ inputs.denominator }}
           if [[ ${{ inputs.sample-only }} ]]; then
-            filename="reference_library_100.csv"
+            filename="reference_library_${{ inputs.sample-only }}.csv"
           else
             filename="reference_library.csv"
           fi

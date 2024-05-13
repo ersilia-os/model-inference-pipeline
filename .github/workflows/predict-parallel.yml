@@ -7,7 +7,7 @@ on:
         type: string
       sample-only:
         required: false
-        type: string
+        type: number
 
 permissions:
   contents: read
