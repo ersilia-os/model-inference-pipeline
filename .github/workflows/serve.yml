@@ -51,3 +51,11 @@ jobs:
       - name: serve predictions to dynamodb
         run: |
           .venv/bin/python3 scripts/write_predictions_to_dynamodb.py ${{ inputs.model }} ${{ inputs.sha }} ${{ inputs.partition }}
+
+      - name: save pipeline end time
+        run: |
+          echo "$(date +%s)" >> meta.txt
+
+      - name: write metadata of pipeline run to s3
+        run: |
+          .venv/bin/python3 scripts/write_metadata_to_s3.py ${{ inputs.model }} "$(cat meta.txt)"
