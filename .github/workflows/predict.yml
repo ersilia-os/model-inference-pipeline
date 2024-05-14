@@ -45,10 +45,6 @@ jobs:
            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
            aws-region: eu-central-1
 
-      - name: Save pipeline start time
-        run: |
-          echo "$(date +%s)" > meta.txt
-
       - name: Get input library
         run: |
           if [[ ${{ inputs.sample-only }} ]]; then
@@ -120,7 +116,6 @@ jobs:
         run: |
           numerator=${{ inputs.numerator }}
           index=$((numerator - 1))
-          
           source activate
           echo "Sample model id selected: ${{ inputs.model-id }}"
           ersilia fetch ${{ inputs.model-id }}
@@ -129,7 +124,3 @@ jobs:
           ersilia api -i $(printf "partition_%04d.csv" $index) -o ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
 
           aws s3 cp ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator) s3://precalculations-bucket/out/${{ inputs.model-id }}/${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
-
-      - name: Write pipeline start time to s3
-        run: |
-          python scripts/write_metadata_to_s3.py ${{ inputs.model-id }} --pipeline_start "$(cat meta.txt)"

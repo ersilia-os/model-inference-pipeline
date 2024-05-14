@@ -2,11 +2,13 @@ import json
 
 import boto3
 import pandas as pd
+from botocore.exceptions import ClientError
 
 from precalculator.models import BasePredictionSchema, Metadata, Prediction
 
 # def read_predictions_from_s3(model_id: str, s3_config:) -> DataFrame[PredictionSchema]
 s3_client = boto3.client("s3")
+dynamodb = boto3.resource("dynamodb")
 
 
 def get_predictions_from_dataframe(model_id: str, prediction_df: pd.DataFrame) -> list[Prediction]:
@@ -42,7 +44,31 @@ def get_predictions_from_dataframe(model_id: str, prediction_df: pd.DataFrame) -
     ]
 
 
-def get_metadata(bucket: str, metadata_key: str) -> Metadata:
-    metadata_obj = s3_client.get_object(Bucket=bucket, Key=metadata_key)
-    metadata_json = json.loads(metadata_obj["Body"].read().decode("utf-8"))
-    return Metadata(**metadata_json)
+def get_metadata(
+    bucket: str, table_name: str, metadata_key: str, s3_uri: str, model_id: str, start_time: int, end_time: int
+) -> Metadata:
+    try:
+        metadata_obj = s3_client.get_object(Bucket=bucket, Key=metadata_key)
+        metadata_json = json.loads(metadata_obj["Body"].read().decode("utf-8"))
+        metadata = Metadata(**metadata_json)
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "NoSuchKey":
+            metadata = Metadata()
+
+    metadata.model_id = model_id
+    metadata.pipeline_latest_start_time = start_time
+    metadata.preds_last_updated = end_time
+    metadata.pipeline_latest_duration = metadata.preds_last_updated - metadata.pipeline_latest_start_time
+    metadata.pipeline_meta_s3_uri = s3_uri
+
+    model_id_search = dynamodb.scan(
+        TableName=table_name,
+        FilterExpression="SK=:model_id",
+        ExpressionAttributeValues={":model_id": {"S": f"MODELID#{model_id}"}},
+        Select="COUNT",
+    )
+    if model_id_search["Count"] > 0:
+        metadata.preds_in_store = True
+        metadata.total_unique_preds = model_id_search["Count"]
+
+    return metadata
