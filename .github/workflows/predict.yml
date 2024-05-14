@@ -132,4 +132,4 @@ jobs:
 
       - name: Write pipeline start time to s3
         run: |
-          .venv/bin/python3 scripts/write_metadata_to_s3.py ${{ inputs.model-id }} --pipeline_start "$(cat meta.txt)"
+          python scripts/write_metadata_to_s3.py ${{ inputs.model-id }} --pipeline_start "$(cat meta.txt)"
