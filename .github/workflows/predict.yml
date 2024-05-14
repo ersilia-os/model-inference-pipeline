@@ -129,3 +129,7 @@ jobs:
           ersilia api -i $(printf "partition_%04d.csv" $index) -o ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
 
           aws s3 cp ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator) s3://precalculations-bucket/out/${{ inputs.model-id }}/${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
+
+      - name: Write pipeline start time to s3
+        run: |
+          .venv/bin/python3 scripts/write_metadata_to_s3.py ${{ inputs.model-id }} --pipeline_start "$(cat meta.txt)"

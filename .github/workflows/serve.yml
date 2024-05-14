@@ -56,6 +56,6 @@ jobs:
         run: |
           echo "$(date +%s)" >> meta.txt
 
-      - name: write metadata of pipeline run to s3
+      - name: write pipeline end time to s3
         run: |
-          .venv/bin/python3 scripts/write_metadata_to_s3.py ${{ inputs.model }} "$(cat meta.txt)"
+          .venv/bin/python3 scripts/write_metadata_to_s3.py ${{ inputs.model }} --pipeline_end "$(cat meta.txt)"
