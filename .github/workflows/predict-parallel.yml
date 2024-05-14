@@ -5,11 +5,23 @@ on:
       model-id:
         required: true
         type: string
+      sample-only:
+        required: false
+        type: string
 
 permissions:
   contents: read
 
 jobs:
+  start-time:
+    runs-on: ubuntu-latest
+    outputs:
+      start_time: ${{ steps.start-time.outputs.start_time }}
+    steps:
+      - name: Get start time
+        id: start-time
+        run: echo "start_time=$(date +%s)" >> "$GITHUB_OUTPUT"
+
   matrix-inference:
     if: github.repository != 'ersilia-os/eos-template'
 
@@ -29,12 +41,13 @@ jobs:
       numerator: ${{ matrix.numerator }}
       denominator: 50
       model-id: ${{ inputs.model-id }}
+      sample-only: ${{ inputs.sample-only }}
       SHA: ${{ github.sha }}
 
     secrets: inherit
   
   trigger-serve-pipeline:
-    needs: matrix-inference
+    needs: [start-time, matrix-inference]
     runs-on: ubuntu-latest
     steps:
       - name: Repository Dispatch
@@ -43,4 +56,4 @@ jobs:
           token: ${{ secrets.API_TOKEN_GITHUB }}
           repository: ersilia-os/model-inference-pipeline
           event-type: dispatch-serving-after-prediction
-          client-payload: '{"model-id": "${{ inputs.model-id }}", "sha": "${{ github.sha }}"}'
+          client-payload: '{"model-id": "${{ inputs.model-id }}", "sha": "${{ github.sha }}", "start_time": "${{ needs.start-time.outputs.start_time }}"}'

@@ -9,6 +9,9 @@ on:
       sha:
         required: true
         type: string
+      start_time:
+        required: true
+        type: string
       partition:
         required: true
         type: number
@@ -19,6 +22,9 @@ on:
         required: true
         type: string
       sha:
+        required: true
+        type: string
+      start_time:
         required: true
         type: string
       partition:
@@ -51,3 +57,8 @@ jobs:
       - name: serve predictions to dynamodb
         run: |
           .venv/bin/python3 scripts/write_predictions_to_dynamodb.py ${{ inputs.model }} ${{ inputs.sha }} ${{ inputs.partition }}
+
+      - name: write pipeline end time to s3
+        run: |
+          end_time=$(date +%s)
+          .venv/bin/python3 scripts/write_metadata_to_s3.py ${{ inputs.model }} --pipeline_start ${{ inputs.start_time }} --pipeline_end $end_time

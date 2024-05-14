@@ -12,6 +12,9 @@ on:
       model-id:
         required: true
         type: string
+      sample-only:
+        required: false
+        type: string
       SHA:
         required: true
         type: string
@@ -41,16 +44,27 @@ jobs:
            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
            aws-region: eu-central-1
-      
+
       - name: Get input library
         run: |
-          aws s3 cp s3://precalculations-bucket/reference_library.csv reference_library.csv
+          if [[ ${{ inputs.sample-only }} ]]; then
+            echo "Getting subset of reference library"
+            filename="reference_library_${{ inputs.sample-only }}.csv"
+          else
+            echo "Getting whole reference library"
+            filename="reference_library.csv"
+          fi
+          aws s3 cp s3://precalculations-bucket/"$filename" $filename
 
       - name: Split library by partition variables
         run: |
           numerator=${{ inputs.numerator }}
           denominator=${{ inputs.denominator }}
-          filename="reference_library.csv"
+          if [[ ${{ inputs.sample-only }} ]]; then
+            filename="reference_library_${{ inputs.sample-only }}.csv"
+          else
+            filename="reference_library.csv"
+          fi
           
           ## Total # lines in given reference library
           total_lines=$(wc -l < "$filename")
@@ -102,7 +116,6 @@ jobs:
         run: |
           numerator=${{ inputs.numerator }}
           index=$((numerator - 1))
-          
           source activate
           echo "Sample model id selected: ${{ inputs.model-id }}"
           ersilia fetch ${{ inputs.model-id }}

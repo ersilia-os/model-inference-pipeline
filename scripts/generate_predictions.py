@@ -24,11 +24,12 @@ def read_input_from_file(path_to_input: str = "reference_library.csv") -> List[s
 if __name__ == "__main__":
     input_path = sys.argv[1]
     output_path = sys.argv[2] if len(sys.argv) > 2 else "prediction_output.csv"
+    model_id = sys.argv[3] if len(sys.argv) > 3 else EXAMPLE_MODEL_ID
 
     input_items = read_input_from_file(input_path)
 
-    with ErsiliaModel(EXAMPLE_MODEL_ID) as mdl:
-        logger.info(f"Fetched model {EXAMPLE_MODEL_ID}")
+    with ErsiliaModel(model_id) as mdl:
+        logger.info(f"Fetched model {model_id}")
 
         start = time.time()
         predictions = mdl.run(input_items, output="pandas")

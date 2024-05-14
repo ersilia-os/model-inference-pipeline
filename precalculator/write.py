@@ -6,13 +6,14 @@ from typing import List
 
 import boto3
 
-from precalculator.models import Prediction
+from precalculator.models import Metadata, Prediction
 
 logger = logging.Logger("DynamoDBWriter")
+s3_client = boto3.client("s3")
+dynamodb = boto3.resource("dynamodb")
 
 
 def write_precalcs_batch_writer(dynamodb_table: str, precalcs: List[Prediction]) -> None:
-    dynamodb = boto3.resource("dynamodb")
     table = dynamodb.Table(dynamodb_table)
 
     logger.info(f"Writing {len(precalcs)} using the boto3 batch writer to DynamoDB")
@@ -28,3 +29,7 @@ def write_precalcs_batch_writer(dynamodb_table: str, precalcs: List[Prediction])
                     "Timestamp": str(time.time()),
                 }
             )
+
+
+def write_metadata(bucket: str, metadata_key: str, metadata: Metadata) -> None:
+    s3_client.put_object(Bucket=bucket, Key=metadata_key, Body=json.dumps(metadata.json()))
