@@ -32,10 +32,6 @@ jobs:
                     aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
                     aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
                     aws-region: eu-central-1
-            
-            -   name: Save pipeline start time
-                run: |
-                    echo "$(date +%s)" > meta.txt
 
             -   name: Get input library
                 run: |
