@@ -49,7 +49,8 @@ def get_metadata(
 ) -> Metadata:
     try:
         metadata_obj = s3_client.get_object(Bucket=bucket, Key=metadata_key)
-        metadata_json = json.loads(metadata_obj["Body"].read().decode("utf-8"))
+        metadata_string = metadata_obj["Body"].read().decode("utf-8")
+        metadata_json = json.loads(metadata_string)
         metadata = Metadata(**metadata_json)
     except ClientError as e:
         if e.response["Error"]["Code"] == "NoSuchKey":
