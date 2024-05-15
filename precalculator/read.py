@@ -8,7 +8,7 @@ from precalculator.models import BasePredictionSchema, Metadata, Prediction
 
 # def read_predictions_from_s3(model_id: str, s3_config:) -> DataFrame[PredictionSchema]
 s3_client = boto3.client("s3")
-dynamodb = boto3.resource("dynamodb")
+dynamodb_client = boto3.client("dynamodb")
 
 
 def get_predictions_from_dataframe(model_id: str, prediction_df: pd.DataFrame) -> list[Prediction]:
@@ -61,7 +61,7 @@ def get_metadata(
     metadata.pipeline_latest_duration = metadata.preds_last_updated - metadata.pipeline_latest_start_time
     metadata.pipeline_meta_s3_uri = s3_uri
 
-    model_id_search = dynamodb.scan(
+    model_id_search = dynamodb_client.scan(
         TableName=table_name,
         FilterExpression="SK=:model_id",
         ExpressionAttributeValues={":model_id": {"S": f"MODELID#{model_id}"}},
