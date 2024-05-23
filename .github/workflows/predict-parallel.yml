@@ -16,11 +16,11 @@ jobs:
   start-time:
     runs-on: ubuntu-latest
     outputs:
-      start_time: ${{ steps.start-time.outputs.start_time }}
+      start-time: ${{ steps.start-time.outputs.start-time }}
     steps:
       - name: Get start time
         id: start-time
-        run: echo "start_time=$(date +%s)" >> "$GITHUB_OUTPUT"
+        run: echo "start-time=$(date +%s)" >> "$GITHUB_OUTPUT"
 
   matrix-inference:
     if: github.repository != 'ersilia-os/eos-template'
@@ -56,4 +56,4 @@ jobs:
           token: ${{ secrets.API_TOKEN_GITHUB }}
           repository: ersilia-os/model-inference-pipeline
           event-type: dispatch-serving-after-prediction
-          client-payload: '{"model-id": "${{ inputs.model-id }}", "sha": "${{ github.sha }}", "start_time": "${{ needs.start-time.outputs.start_time }}"}'
+          client-payload: '{"model-id": "${{ inputs.model-id }}", "sha": "${{ github.sha }}", "start-time": "${{ needs.start-time.outputs.start-time }}"}'

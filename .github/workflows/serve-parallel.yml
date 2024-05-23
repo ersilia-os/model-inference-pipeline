@@ -43,5 +43,5 @@ jobs:
     uses: ./.github/workflows/log-metadata.yml
     with:
       model: ${{ github.event.client_payload.model-id }}
-      start_time: ${{ github.event.client_payload.start_time }}
+      start-time: ${{ github.event.client_payload.start-time }}
     secrets: inherit

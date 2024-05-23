@@ -35,5 +35,5 @@ jobs:
 
         - name: write metadata to s3
           run: |
-            end_time=$(date +%s)
-            .venv/bin/python3 scripts/write_metadata_to_s3.py ${{ inputs.model }} ${{ inputs.start_time }} $end_time
+            end-time=$(date +%s)
+            .venv/bin/python3 scripts/write_metadata_to_s3.py ${{ inputs.model }} ${{ inputs.start-time }} $end-time
