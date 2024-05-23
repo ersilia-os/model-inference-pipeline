@@ -36,6 +36,12 @@ jobs:
     with:
       model: ${{ github.event.client_payload.model-id }}
       sha: ${{ github.event.client_payload.sha }}
-      start_time: ${{ github.event.client_payload.start_time }}
       partition: ${{ matrix.partition }}
+    secrets: inherit
+
+  log-metadata:
+    uses: ./.github/workflows/log-metadata.yml
+    with:
+      model: ${{ github.event.client_payload.model-id }}
+      start_time: ${{ github.event.client_payload.start_time }}
     secrets: inherit
