@@ -34,20 +34,17 @@ jobs:
     steps:
       - name: Print system details
         run: sudo lshw -short
-      
-      - name: Check into ersilia-os/ersilia repo 
-        uses: actions/checkout@v3
-        with:
-          repository: ersilia-os/ersilia
-      
+
       - name: Check out the model-inference-pipeline repo (scripts folder)
         uses: actions/checkout@v3
         with:
           repository: ersilia-os/model-inference-pipeline
           path: scripts
       
-      # - name: Ensure scripts directory exists and retain relevant files
-      #   run: mkdir -p ${{ github.workspace }}/scripts
+      - name: Check into ersilia-os/ersilia repo 
+        uses: actions/checkout@v3
+        with:
+          repository: ersilia-os/ersilia
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@master
