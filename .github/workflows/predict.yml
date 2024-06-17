@@ -29,6 +29,8 @@ on:
 jobs:
   infer-and-upload:
     runs-on: ubuntu-latest
+    env:
+      ACTIONS_RUNNER_DEBUG: true
     steps:
       - name: Print system details
         run: sudo lshw -short
@@ -122,6 +124,11 @@ jobs:
           ersilia serve ${{ inputs.model-id }}
           echo "${{ inputs.model-id }} succesfully fetched and served"
           ersilia api -i $(printf "partition_%04d.csv" $index) -o ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
+
+      - name: Debug file paths
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Contents of workspace directory: $(ls ${{ github.workspace }})"
 
       - name: Run Python script to upload partition output to AWS S3
         env:
