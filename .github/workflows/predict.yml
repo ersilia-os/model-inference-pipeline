@@ -134,11 +134,11 @@ jobs:
       - name: Debug file paths
         run: |
           echo "Current directory: $(pwd)"
-          echo "Contents of workspace directory: $(ls ${{ github.workspace }}/scripts)"
+          echo "Contents of workspace directory: $(ls ${{ github.workspace }}/scripts/scripts)"
 
       - name: Run Python script to upload partition output to AWS S3
         env:
           numerator: ${{ inputs.numerator }}
           model-id: ${{ inputs.model-id }}
           SHA: ${{ inputs.SHA }}
-        run: python ${{ github.workspace }}/scripts/upload_partitions_to_s3.py
+        run: python ${{ github.workspace }}/scripts/scripts/upload_partitions_to_s3.py
