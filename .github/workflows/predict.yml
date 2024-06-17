@@ -40,8 +40,14 @@ jobs:
         with:
           repository: ersilia-os/ersilia
       
-      - name: Ensure scripts directory exists
-        run: mkdir -p ${{ github.workspace }}/scripts
+      - name: Check out the model-inference-pipeline repo (scripts folder)
+        uses: actions/checkout@v3
+        with:
+          repository: ersilia-os/model-inference-pipeline
+          path: scripts
+      
+      # - name: Ensure scripts directory exists and retain relevant files
+      #   run: mkdir -p ${{ github.workspace }}/scripts
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@master
