@@ -17,6 +17,7 @@ pydantic = "^1"
 pandera = "^0.16.1"
 s3fs = "^2023.10.0"
 python-dotenv = "^1.0.0"
+duckdb = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
