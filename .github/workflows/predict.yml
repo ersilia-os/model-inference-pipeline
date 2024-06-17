@@ -123,4 +123,9 @@ jobs:
           echo "${{ inputs.model-id }} succesfully fetched and served"
           ersilia api -i $(printf "partition_%04d.csv" $index) -o ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
 
-          aws s3 cp ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator) s3://precalculations-bucket/out/${{ inputs.model-id }}/${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
+      - name: Run Python script to upload partition output to AWS S3
+        env:
+          numerator: ${{ inputs.numerator }}
+          model-id: ${{ inputs.model-id }}
+          SHA: ${{ inputs.SHA }}
+        run: python scripts/upload_to_s3.py
