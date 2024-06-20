@@ -143,4 +143,4 @@ jobs:
           numerator: ${{ inputs.numerator }}
           model-id: ${{ inputs.model-id }}
           SHA: ${{ inputs.SHA }}
-        run: python ${{ github.workspace }}/scripts/scripts/upload_partitions_to_s3.py
+        run: python ${{ github.workspace }}/scripts/upload_partitions_to_s3.py
