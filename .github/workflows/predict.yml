@@ -54,7 +54,8 @@ jobs:
       - name: Check into ersilia-os/ersilia repo 
         uses: actions/checkout@v4
         with:
-          repository: ersilia-os/ersilia
+          repository: ersilia-os/ersilia # In the next line, perform a shallow clone
+          fetch-depth: 1
 
       - name: Restore scripts folder
         run: tar -xzvf scripts.tar.gz
