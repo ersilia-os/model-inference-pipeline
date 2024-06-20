@@ -48,10 +48,16 @@ jobs:
           echo "Current directory: $(pwd)"
           echo "Contents of workspace directory: $(ls ${{ github.workspace }}/scripts)"
 
+      - name: Archive scripts folder
+        run: tar -czvf scripts.tar.gz scripts
+
       - name: Check into ersilia-os/ersilia repo 
         uses: actions/checkout@v4
         with:
           repository: ersilia-os/ersilia
+
+      - name: Restore scripts folder
+        run: tar -xzvf scripts.tar.gz
       
       - name: Debug file paths with ersilia-os/ersilia repo
         run: |
