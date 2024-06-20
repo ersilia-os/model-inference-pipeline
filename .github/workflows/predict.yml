@@ -35,12 +35,19 @@ jobs:
       - name: Print system details
         run: sudo lshw -short
 
-      - name: Check out the model-inference-pipeline repo (scripts folder)
-        uses: actions/checkout@v4
-        with:
-          repository: ersilia-os/model-inference-pipeline
-          path: scripts
-      
+      - name: checkout repo content
+        uses: actions/checkout@v4 # checkout repo content
+
+      - name: Delete unnecessary folders
+        run: |
+          shopt -s extglob
+          rm -rf !(scripts)
+
+      - name: Debug file paths
+        run: |
+          echo "Current directory: $(pwd)"
+          echo "Contents of workspace directory: $(ls ${{ github.workspace }}/scripts)"
+
       - name: Check into ersilia-os/ersilia repo 
         uses: actions/checkout@v4
         with:
@@ -130,11 +137,6 @@ jobs:
           ersilia serve ${{ inputs.model-id }}
           echo "${{ inputs.model-id }} succesfully fetched and served"
           ersilia api -i $(printf "partition_%04d.csv" $index) -o ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
-
-      - name: Debug file paths
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "Contents of workspace directory: $(ls ${{ github.workspace }}/scripts)"
 
       - name: Run Python script to upload partition output to AWS S3
         env:
