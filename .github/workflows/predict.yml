@@ -36,13 +36,13 @@ jobs:
         run: sudo lshw -short
 
       - name: Check out the model-inference-pipeline repo (scripts folder)
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: ersilia-os/model-inference-pipeline
           path: scripts
       
       - name: Check into ersilia-os/ersilia repo 
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: ersilia-os/ersilia
 
