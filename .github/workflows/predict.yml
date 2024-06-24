@@ -130,7 +130,7 @@ jobs:
           python --version
           echo "After conda init"
           conda init
-          python -m pip install -e .[test]
+          python -m pip install ersilia
           
       - name: Predict partition output and upload
         run: |
