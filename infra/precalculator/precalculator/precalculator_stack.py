@@ -33,7 +33,6 @@ ENDPOINT_NAME = str(os.getenv("API_ENDPOINT_NAME"))
 API_KEY_NAME = str(os.getenv("API_KEY_NAME"))
 
 
-
 class PrecalculatorStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
