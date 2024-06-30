@@ -37,8 +37,8 @@ if __name__ == "__main__":
         logger.info(f"Inference took {time.time() - start :2f} seconds")
 
     if format == "csv":
-        predictions.to_csv(output_path + ".csv") # type: ignore
+        predictions.to_csv(output_path + ".csv")  # type: ignore
     elif format == "parquet":
-        predictions.to_parquet(output_path + ".parquet") # type: ignore
+        predictions.to_parquet(output_path + ".parquet")  # type: ignore
     else:
         print("unsupported format")
