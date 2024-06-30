@@ -4,7 +4,7 @@ import boto3
 import pandas as pd
 from botocore.exceptions import ClientError
 
-from precalculator.models import BasePredictionSchema, Metadata, Prediction
+from precalculator.models import Metadata, Prediction
 
 s3_client = boto3.client("s3")
 dynamodb_client = boto3.client("dynamodb")
@@ -22,7 +22,6 @@ def get_predictions_from_dataframe(model_id: str, prediction_df: pd.DataFrame) -
     """
     # the first 2 columns should be validated against the base schema
     prediction_keys = prediction_df.iloc[:, :2]
-    BasePredictionSchema.validate(prediction_keys)
 
     # the 3rd column onwards should be combined into a single column
     prediction_output = pd.Series(prediction_df.iloc[:, 2:].values.tolist(), name="output")
