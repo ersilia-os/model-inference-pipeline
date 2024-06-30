@@ -6,7 +6,6 @@ from botocore.exceptions import ClientError
 
 from precalculator.models import BasePredictionSchema, Metadata, Prediction
 
-# def read_predictions_from_s3(model_id: str, s3_config:) -> DataFrame[PredictionSchema]
 s3_client = boto3.client("s3")
 dynamodb_client = boto3.client("dynamodb")
 

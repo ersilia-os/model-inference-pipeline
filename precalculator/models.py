@@ -1,4 +1,5 @@
 from typing import Any
+from uuid import UUID
 
 import pandera as pa
 from pydantic import BaseModel, Field

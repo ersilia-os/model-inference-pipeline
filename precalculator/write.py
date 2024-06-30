@@ -14,7 +14,7 @@ dynamodb = boto3.resource("dynamodb")
 
 
 def write_precalcs_batch_writer(dynamodb_table: str, precalcs: List[Prediction]) -> None:
-    table = dynamodb.Table(dynamodb_table)
+    table = dynamodb.Table(dynamodb_table) # type: ignore
 
     logger.info(f"Writing {len(precalcs)} using the boto3 batch writer to DynamoDB")
 
