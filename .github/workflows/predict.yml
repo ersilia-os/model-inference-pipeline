@@ -3,27 +3,39 @@ name: Generate Predictions
 on:
   workflow_call:
     inputs:
-      bucket-name:
+      numerator:
         required: true
-        type: string
-      s3-filename:
+        type: number
+      denominator:
         required: true
-        type: string
-      local-filename:
-        required: true
-        type: string
-      output-path:
-        required: true
-        type: string
+        type: number
       model-id:
         required: true
+        type: string
+      sample-only:
+        required: false
         type: string
       SHA:
         required: true
         type: string
-      numerator:
-        required: true
-        type: number
+      # numerator:
+      #   required: true
+      #   type: number
+      # denominator:
+      #   required: true
+      #   type: number
+      # local-filename:
+      #   required: true
+      #   type: string
+      # output-path:
+      #   required: true
+      #   type: string
+      # model-id:
+      #   required: true
+      #   type: string
+      # SHA:
+      #   required: true
+      #   type: string
 
 jobs:
   infer-and-upload:
@@ -40,22 +52,28 @@ jobs:
           shopt -s extglob
           rm -rf !(scripts)
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@master
-        with:
-           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-           aws-region: eu-central-1
-
-      - name: Run Python script to generate predictions with AWS and Ersilia
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          BUCKET_NAME: ${{ inputs.bucket-name }}
-          S3_FILENAME: ${{ inputs.s3-filename }}
-          LOCAL_FILENAME: ${{ inputs.local-filename }}
-          OUTPUT_PATH: ${{ inputs.output-path }}
-          MODEL_ID: ${{ inputs.model-id }}
-          SHA: ${{ inputs.SHA }}
-          numerator: ${{ inputs.numerator }}
-        run: python ${{ github.workspace }}/scripts/generate_predictions_with_aws_and_ersilia.py $BUCKET_NAME $S3_FILENAME $LOCAL_FILENAME $OUTPUT_PATH $MODEL_ID $SHA $numerator
+          - name: Configure AWS credentials
+          uses: aws-actions/configure-aws-credentials@master
+          with:
+             aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+             aws-region: eu-central-1
+  
+          - name: Set up Python environment
+            uses: actions/setup-python@v2
+            with:
+              python-version: '3.10'
+          
+          - name: Install dependencies
+            run: |
+              python -m pip install --upgrade pip
+              pip install boto3 pandas ersilia
+    
+          - name: Run Python script to generate predictions and upload to S3
+            env:
+              MODEL_ID: ${{ inputs.model-id }}
+              SHA: ${{ inputs.SHA }}
+              numerator: ${{ inputs.numerator }}
+              sample-only: ${{ inputs.sample-only }}
+              GITHUB_REPOSITORY: ${{ github.event.repository.full_name }}
+            run: python generate_predictions_with_aws_and_ersilia.py
