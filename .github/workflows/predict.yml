@@ -3,60 +3,42 @@ name: Generate Predictions
 on:
   workflow_call:
     inputs:
-      numerator:
-        required: true
-        type: number
-      denominator:
-        required: true
-        type: number
-      model-id:
+      bucket-name:
         required: true
         type: string
-      sample-only:
-        required: false
+      s3-filename:
+        required: true
+        type: string
+      local-filename:
+        required: true
+        type: string
+      output-path:
+        required: true
+        type: string
+      model-id:
+        required: true
         type: string
       SHA:
         required: true
         type: string
-
-# env:
-  # MODEL_ID env variable is used when this script is run from the individual model repo.
-  # If placing the script in the individual repo, find and replace '${{ inputs.model-id }}' with '$MODEL_ID'
-  # MODEL_ID: ${{ github.event.repository.name }}
-  # Replace ${{ inputs.SHA }} with ${SHA} in the individual model repo case.
-  # SHA: ${{ github.sha }}
+      numerator:
+        required: true
+        type: number
 
 jobs:
   infer-and-upload:
     runs-on: ubuntu-latest
-    env:
-      ACTIONS_RUNNER_DEBUG: true
     steps:
       - name: Print system details
         run: sudo lshw -short
 
       - name: checkout repo content
-        uses: actions/checkout@v4 # checkout repo content
+        uses: actions/checkout@v4
 
       - name: Delete unnecessary folders
         run: |
           shopt -s extglob
           rm -rf !(scripts)
-
-      - name: Debug file paths
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "Contents of workspace directory: $(ls ${{ github.workspace }}/scripts)"
-
-      # - name: Check into ersilia-os/ersilia repo 
-      #   uses: actions/checkout@v4
-      #   with:
-      #     repository: ersilia-os/ersilia
-      
-      - name: Debug file paths with ersilia-os/ersilia repo
-        run: |
-          echo "Current directory: $(pwd)"
-          echo "Contents of workspace directory: $(ls ${{ github.workspace }}/scripts)"
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@master
@@ -65,87 +47,15 @@ jobs:
            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
            aws-region: eu-central-1
 
-      - name: Get input library
-        run: |
-          if [[ ${{ inputs.sample-only }} ]]; then
-            echo "Getting subset of reference library"
-            filename="reference_library_${{ inputs.sample-only }}.csv"
-          else
-            echo "Getting whole reference library"
-            filename="reference_library.csv"
-          fi
-          aws s3 cp s3://precalculations-bucket/"$filename" $filename
-
-      - name: Split library by partition variables
-        run: |
-          numerator=${{ inputs.numerator }}
-          denominator=${{ inputs.denominator }}
-          if [[ ${{ inputs.sample-only }} ]]; then
-            filename="reference_library_${{ inputs.sample-only }}.csv"
-          else
-            filename="reference_library.csv"
-          fi
-          
-          ## Total # lines in given reference library
-          total_lines=$(wc -l < "$filename")
-          echo $total_lines
-          
-          # Determine the # of file lines per partition
-          ((lines_per_file = (total_lines + $denominator-1) / $denominator))
-
-          # Split the file
-          split -l $lines_per_file -a 4 -d --additional-suffix=.csv "$filename" partition_
-          
-          # Add 'smiles' to header of all partition files beyond the first
-          for (( i=1; i<$denominator; i++ ))
-          do
-            partition=$(printf "partition_%04d.csv" $i)
-            sed -i '1i smiles' "$partition"
-          done
-
-          # List files in dir
-          ls
-
-      - name: Add conda to system path
-        run: echo $CONDA/bin >> $GITHUB_PATH
-
-      - name: Source conda
-        run: source $CONDA/etc/profile.d/conda.sh
-
-      - name: Set Python to 3.10.10
-        run:
-         conda install -y python=3.10.10
-
-      - name: Install dependencies
-        run: |
-          source activate
-          conda init
-          conda install git-lfs -c conda-forge
-          git-lfs install
-          conda install gh -c conda-forge
-          
-      - name: Install ersilia
-        run: |
-          source activate
-          python --version
-          echo "After conda init"
-          conda init
-          python -m pip install ersilia
-          
-      - name: Predict partition output and upload
-        run: |
-          numerator=${{ inputs.numerator }}
-          index=$((numerator - 1))
-          source activate
-          echo "Sample model id selected: ${{ inputs.model-id }}"
-          ersilia fetch ${{ inputs.model-id }}
-          ersilia serve ${{ inputs.model-id }}
-          echo "${{ inputs.model-id }} succesfully fetched and served"
-          ersilia api -i $(printf "partition_%04d.csv" $index) -o ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
-
-      - name: Run Python script to upload partition output to AWS S3
+      - name: Run Python script to generate predictions with AWS and Ersilia
         env:
-          numerator: ${{ inputs.numerator }}
-          model-id: ${{ inputs.model-id }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          BUCKET_NAME: ${{ inputs.bucket-name }}
+          S3_FILENAME: ${{ inputs.s3-filename }}
+          LOCAL_FILENAME: ${{ inputs.local-filename }}
+          OUTPUT_PATH: ${{ inputs.output-path }}
+          MODEL_ID: ${{ inputs.model-id }}
           SHA: ${{ inputs.SHA }}
-        run: python ${{ github.workspace }}/scripts/upload_partitions_to_s3.py
+          numerator: ${{ inputs.numerator }}
+        run: python ${{ github.workspace }}/scripts/generate_predictions_with_aws_and_ersilia.py $BUCKET_NAME $S3_FILENAME $LOCAL_FILENAME $OUTPUT_PATH $MODEL_ID $SHA $numerator
