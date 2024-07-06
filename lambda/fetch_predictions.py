@@ -1,20 +1,26 @@
-import click
+import argparse
+
 import pandas as pd
 
 from config.app import DataLakeConfig
 from precalculator.fetcher import PredictionFetcher
 
 
-@click.command()
-@click.option("--user")
-@click.option("--request")
-@click.option("--model")
-def get_parameters(user: str, request: str, model: str) -> dict[str, str]:
-    return {
-        "user_id": user,
-        "request_id": request,
-        "model_id": model,
+def get_parameters() -> dict:
+    parser = argparse.ArgumentParser(description='Process parameters.')
+    parser.add_argument('--user', help='User ID')
+    parser.add_argument('--request', help='Request ID')
+    parser.add_argument('--model', help='Model ID')
+    
+    args = parser.parse_args()
+    
+    params = {
+        'user_id': args.user,
+        'request_id': args.request,
+        'model_id': args.model
     }
+    
+    return params
 
 
 def main(user_id: str, request_id: str, model_id: str) -> pd.DataFrame:
@@ -30,9 +36,13 @@ def main(user_id: str, request_id: str, model_id: str) -> pd.DataFrame:
     """
     config = DataLakeConfig()  # type: ignore
 
+    print("config", config)
+
     fetcher = PredictionFetcher(config, user_id, request_id, model_id)
 
     path_to_input = fetcher.get_s3_input_location()
+
+    print(path_to_input)
 
     df_predictions = fetcher.fetch(path_to_input)
 
@@ -55,6 +65,8 @@ def handler(event: dict, context: dict) -> dict:
 if __name__ == "__main__":
     """We are able to call the main function locally as a script"""
     params = get_parameters()
+
+    print("params = ", params)
 
     df = main(**params)
 
