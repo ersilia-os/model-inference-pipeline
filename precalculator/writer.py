@@ -2,10 +2,11 @@ import json
 
 import boto3
 
-from config.config import DataLakeConfig
+from config.app import DataLakeConfig
 from precalculator.models import Metadata
 
 s3_client = boto3.client("s3")
+
 
 class PredictionWriter:
     def __init__(self, config: DataLakeConfig, model_id: str):

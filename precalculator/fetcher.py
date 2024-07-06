@@ -3,7 +3,7 @@ import os
 import awswrangler as wr
 import pandas as pd
 
-from config.config import DataLakeConfig
+from config.app import DataLakeConfig
 
 
 class PredictionFetcher:

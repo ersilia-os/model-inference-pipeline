@@ -1,8 +1,8 @@
 import click
 import pandas as pd
 
+from config.app import DataLakeConfig
 from precalculator.fetcher import PredictionFetcher
-from config.config import DataLakeConfig
 
 
 @click.command()
@@ -28,7 +28,7 @@ def main(user_id: str, request_id: str, model_id: str) -> pd.DataFrame:
     Returns:
         pd.DataFrame: _description_
     """
-    config = DataLakeConfig() # type: ignore
+    config = DataLakeConfig()  # type: ignore
 
     fetcher = PredictionFetcher(config, user_id, request_id, model_id)
 
@@ -49,10 +49,7 @@ def handler(event: dict, context: dict) -> dict:
     Returns:
         dict: _description_
     """
-    return {
-        "event": len(event),
-        "context": len(context)
-    }
+    return {"event": len(event), "context": len(context)}
 
 
 if __name__ == "__main__":
