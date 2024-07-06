@@ -1,7 +1,9 @@
+import os
+
 import awswrangler as wr
 import pandas as pd
 
-from precalculator.config import DataLakeConfig
+from config.config import DataLakeConfig
 
 
 class PredictionFetcher:
@@ -16,6 +18,15 @@ class PredictionFetcher:
         # TODO: figure out how we are going to check for available models
         # talk to Nicholas about the order of events here
         return f"{self.model_id} available in prediction store"
+
+    def get_s3_input_location(self) -> str:
+        return os.path.join(
+            "s3://",
+            self.config.s3_bucket_name,
+            self.config.s3_upload_prefix,
+            self.model_id,
+            self.request_id,
+        )
 
     def fetch(self, path_to_input: str) -> pd.DataFrame:
         input_df = self._read_input_data(path_to_input)
@@ -67,7 +78,7 @@ class PredictionFetcher:
     def _write_inputs_s3(self, input_df: pd.DataFrame) -> None:
         wr.s3.to_parquet(
             df=input_df,
-            path=f"{self.config.s3_prefix}/",
+            path=f"{self.config.s3_input_prefix}/",
             dataset=True,
             database=self.config.athena_database,
             table=self.config.athena_request_table,
