@@ -5,17 +5,17 @@ from precalculator.config import DataLakeConfig
 
 
 class PredictionFetcher:
-    def __init__(self, config: DataLakeConfig, user_id: str, request_id: str, models: list[str]):
+    def __init__(self, config: DataLakeConfig, user_id: str, request_id: str, model_id: str):
         self.config = config
         self.user_id = user_id
         self.request_id = request_id
         # TODO: decide on multi model implementation, for now assume a list of 1 model ID
-        self.models = models
+        self.model_id = model_id
 
     def check_availability(self) -> str:
         # TODO: figure out how we are going to check for available models
         # talk to Nicholas about the order of events here
-        return f"{self.models} available in prediction store"
+        return f"{self.model_id} available in prediction store"
 
     def fetch(self, path_to_input: str) -> pd.DataFrame:
         input_df = self._read_input_data(path_to_input)
@@ -49,7 +49,7 @@ class PredictionFetcher:
         df.rename({0: "smiles"}, inplace=True)
 
         # TODO: validate smiles?
-        ## por ejemplo -----------------------------------------
+        ## for example -----------------------------------------
         # cid = CompoundIdentifier()
         # valid_smiles = df.apply(lambda x: cid._is_smiles(x))
 
@@ -77,17 +77,18 @@ class PredictionFetcher:
     def _read_predictions_from_s3(self) -> pd.DataFrame:
         query = f"""
             select
-                p.key,
-                p.input,
-                p.mw
+                p.model_id,
+                p.input_key,
+                p.smiles,
+                p.output
             from
                 predictions p
-                inner join requests r
-                    on p.input = r.smiles
+                left join requests r
+                    on p.smiles = r.smiles
             where
                 r.request_id = '{self.request_id}'
                 and r.user_id = '{self.user_id}'
-                and p.model_id = '{self.models[0]}'
+                and p.model_id = '{self.model_id}'
         """
 
         df_out = wr.athena.read_sql_query(query, database=self.config.athena_database)
