@@ -21,12 +21,7 @@ class PredictionFetcher:
 
     def get_s3_input_location(self) -> str:
         return os.path.join(
-            "s3://",
-            self.config.s3_bucket_name,
-            self.config.s3_upload_prefix,
-            self.model_id,
-            self.request_id,
-            "*"
+            "s3://", self.config.s3_bucket_name, self.config.s3_upload_prefix, self.model_id, self.request_id, "*"
         )
 
     def fetch(self, path_to_input: str) -> pd.DataFrame:

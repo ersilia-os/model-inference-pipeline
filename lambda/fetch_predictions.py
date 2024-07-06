@@ -7,19 +7,15 @@ from precalculator.fetcher import PredictionFetcher
 
 
 def get_parameters() -> dict:
-    parser = argparse.ArgumentParser(description='Process parameters.')
-    parser.add_argument('--user', help='User ID')
-    parser.add_argument('--request', help='Request ID')
-    parser.add_argument('--model', help='Model ID')
-    
+    parser = argparse.ArgumentParser(description="Process parameters.")
+    parser.add_argument("--user", help="User ID")
+    parser.add_argument("--request", help="Request ID")
+    parser.add_argument("--model", help="Model ID")
+
     args = parser.parse_args()
-    
-    params = {
-        'user_id': args.user,
-        'request_id': args.request,
-        'model_id': args.model
-    }
-    
+
+    params = {"user_id": args.user, "request_id": args.request, "model_id": args.model}
+
     return params
 
 
