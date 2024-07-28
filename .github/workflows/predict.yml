@@ -59,10 +59,16 @@ jobs:
             aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
             aws-region: eu-central-1
 
+      - name: Install make
+        run: sudo apt-get update && sudo apt-get install -y make
+
       - name: Set up Python environment
         uses: actions/setup-python@v2
         with:
           python-version: '3.10'
+
+      - name: Run make install
+        run: make install
       
       - name: Install dependencies
         run: |
