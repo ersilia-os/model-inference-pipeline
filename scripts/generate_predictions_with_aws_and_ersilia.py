@@ -12,6 +12,25 @@ EXAMPLE_MODEL_ID = "eos2zmb"
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+def split_csv(input_path: str, denominator: int) -> List[str]:
+    df = pd.read_csv(input_path)
+    num_chunks = denominator
+    chunk_size = len(df) // num_chunks + (len(df) % num_chunks > 0)
+    
+    partition_files = []
+    for i in range(num_chunks):
+        start_row = i * chunk_size
+        end_row = (i + 1) * chunk_size
+        partition_df = df.iloc[start_row:end_row]
+        
+        partition_filename = f"partition_{i:04d}.csv"
+        partition_df.to_csv(partition_filename, index=False)
+        partition_files.append(partition_filename)
+        
+        logger.info(f"Created partition file {partition_filename}")
+    
+    return partition_files
+
 
 def read_input_from_s3(bucket_name: str, filename: str, local_filename: str) -> None:
     s3 = boto3.client('s3')
@@ -54,6 +73,7 @@ if __name__ == "__main__":
     model_id = os.environ.get('MODEL_ID')
     sha = os.environ.get('SHA')
     numerator = int(os.environ.get('numerator'))
+    denominator = int(os.environ.get('denominator'))
     sample_only = os.environ.get('sample-only')
     
     # Construct bucket name based on GitHub repository
@@ -65,12 +85,19 @@ if __name__ == "__main__":
     # Fetch input data from S3
     read_input_from_s3(bucket_name, input_filename, input_filename)
     
+    # Split the input file into partitions
+    partition_files = split_csv(input_filename, denominator)
+    
+    # Determine which partition this worker should process
+    partition_file = partition_files[numerator - 1]  
+    output_path_template = f"../{sha}_{numerator - 1:04d}.csv"
+    
     # Generate predictions and save locally
-    output_path_template = f"../{sha}_{{numerator:04d}}.csv"
-    predictions = generate_predictions(input_filename, output_path_template, model_id, sha, numerator)
+    predictions = generate_predictions(partition_file, output_path_template, model_id, sha, numerator)
     
     # Construct S3 destination path
-    s3_destination = f"s3://precalculations-bucket/out/{model_id}/{sha}/{sha}_{numerator}.csv"
+    s3_destination = f"s3://precalculations-bucket/out/{model_id}/{sha}/{sha}_{numerator - 1:04d}.csv"
     
-    # Upload predictions to S3 using AWS CLI
-    upload_to_s3_via_cli(output_path_template.format(numerator=numerator), s3_destination)
+    # Upload predictions to S3
+    upload_to_s3_via_cli(output_path_template, s3_destination)
+
