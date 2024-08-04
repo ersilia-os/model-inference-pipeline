@@ -52,6 +52,9 @@ jobs:
           shopt -s extglob
           rm -rf !(scripts)
 
+      - name: Print the current directory
+        run: pwd
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@master
         with:
