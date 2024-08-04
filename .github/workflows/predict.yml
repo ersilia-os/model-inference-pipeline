@@ -47,10 +47,6 @@ jobs:
       - name: checkout repo content
         uses: actions/checkout@v4
 
-      - name: Delete unnecessary folders
-        run: |
-          shopt -s extglob
-          rm -rf !(scripts)
 
       - name: Print contents of the current directory
         run: ls -la
