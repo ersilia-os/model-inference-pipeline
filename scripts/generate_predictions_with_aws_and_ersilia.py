@@ -2,102 +2,97 @@ import logging
 import time
 import os
 import subprocess
+import sys
 from typing import List
 import boto3
 import pandas as pd
-from ersilia import ErsiliaModel  # type: ignore
+import awswrangler as wr
 
 EXAMPLE_MODEL_ID = "eos2zmb"
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-def split_csv(input_path: str, denominator: int) -> List[str]:
+def split_csv(input_path: str, numerator: int, denominator: int) -> str:
     df = pd.read_csv(input_path)
-    num_chunks = denominator
-    chunk_size = len(df) // num_chunks + (len(df) % num_chunks > 0)
-    
-    partition_files = []
-    for i in range(num_chunks):
-        start_row = i * chunk_size
-        end_row = (i + 1) * chunk_size
-        partition_df = df.iloc[start_row:end_row]
-        
-        partition_filename = f"partition_{i:04d}.csv"
-        partition_df.to_csv(partition_filename, index=False)
-        partition_files.append(partition_filename)
-        
-        logger.info(f"Created partition file {partition_filename}")
-    
-    return partition_files
+
+    total_length = len(df)
+    print(total_length)
+
+    chunk_size = total_length // denominator
+    print(chunk_size)
 
 
-def read_input_from_s3(bucket_name: str, filename: str, local_filename: str) -> None:
+    start_row = (numerator-1) * chunk_size
+    end_row = start_row + chunk_size
+
+    print(start_row, end_row)
+
+    df = df.iloc[start_row:end_row]
+    df.to_csv("input.csv", index=False)
+
+    return "input.csv"
+
+
+def fetch_input_from_s3(bucket_name: str, filename: str, local_filename: str) -> None:
     s3 = boto3.client('s3')
     s3.download_file(bucket_name, filename, local_filename)
     logger.info(f"Downloaded {filename} from S3")
-
-
-def read_input_from_file(local_filename: str = "reference_library.csv") -> List[str]:
-    start = time.time()
-    with open(local_filename, "r") as file:
-        contents = file.readlines()
-    logger.info(f"Reading took {time.time() - start :.2f} seconds")
-    logger.info(f"Input file has {len(contents)} rows")
-    return contents
-
-
-def generate_predictions(input_path: str, output_path_template: str, model_id: str, sha: str, numerator: int) -> pd.DataFrame:
-    input_items = read_input_from_file(input_path)
-
-    with ErsiliaModel(model_id) as mdl:
-        logger.info(f"Fetched model {model_id}")
-
-        start = time.time()
-        predictions = mdl.run(input_items, output="pandas")
-        logger.info(f"Inference took {time.time() - start :.2f} seconds")
-
-    output_path = output_path_template.format(sha=sha, numerator=numerator)
-    predictions.to_csv(output_path, index=False)
-    logger.info(f"Predictions saved to {output_path}")
-    
-    return predictions
-
 
 def upload_to_s3_via_cli(local_filename: str, s3_destination: str) -> None:
     subprocess.run(["aws", "s3", "cp", local_filename, s3_destination])
 
 
+TEST_ENV = {
+    "MODEL_ID": "eos2zmb",
+    "SHA": "1234",
+    "numerator": 1,
+    "denominator": 2,
+    "sample-only": 10,
+    "GITHUB_REPOSITORY": "precalculations-bucket",
+}
+
 if __name__ == "__main__":
+
+    if sys.argv[1] == "dev":
+        env_source = TEST_ENV
+    else:
+        env_source = os.environ
+    
     # Reading inputs from environment variables
-    model_id = os.environ.get('MODEL_ID')
-    sha = os.environ.get('SHA')
-    numerator = int(os.environ.get('numerator'))
-    denominator = int(os.environ.get('denominator'))
-    sample_only = os.environ.get('sample-only')
+    model_id = env_source.get('MODEL_ID')
+    sha = env_source.get('SHA')
+    numerator = int(env_source.get('numerator'))
+    denominator = int(env_source.get('denominator'))
+    sample_only = env_source.get('sample-only')
     
     # Construct bucket name based on GitHub repository
-    bucket_name = os.environ.get('GITHUB_REPOSITORY').replace('/', '-')
+    bucket_name = env_source.get('GITHUB_REPOSITORY').replace('/', '-')
     
     # Determine input filename based on sample-only flag
     input_filename = f"reference_library_{sample_only}.csv" if sample_only else "reference_library.csv"
     
     # Fetch input data from S3
-    read_input_from_s3(bucket_name, input_filename, input_filename)
+    fetch_input_from_s3(bucket_name, input_filename, input_filename)
     
-    # Split the input file into partitions
-    partition_files = split_csv(input_filename, denominator)
+    # # Split the input file into partitions
+    partitioned_input = split_csv(input_filename, numerator, denominator)
     
-    # Determine which partition this worker should process
-    partition_file = partition_files[numerator - 1]  
+    # # Determine which partition this worker should process
+    # partition_file = partition_files[numerator - 1]  
     output_path_template = f"../{sha}_{numerator - 1:04d}.csv"
     
     # Generate predictions and save locally
-    predictions = generate_predictions(partition_file, output_path_template, model_id, sha, numerator)
-    
+    # predictions = generate_predictions(input_filename, output_path_template, model_id, sha, numerator)
+
+    subprocess.run(["ersilia", "serve", model_id])
+    subprocess.run(["ersilia", "run", "-i", partitioned_input, "-o", "output.csv"])
+
+
     # Construct S3 destination path
     s3_destination = f"s3://precalculations-bucket/out/{model_id}/{sha}/{sha}_{numerator - 1:04d}.csv"
-    
-    # Upload predictions to S3
-    upload_to_s3_via_cli(output_path_template, s3_destination)
+
+    # TODO: postprocess predictions
+
+    # TODO: write preds to s3 with aws wrangler
 
