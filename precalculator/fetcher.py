@@ -1,22 +1,41 @@
+import logging
 import os
+import sys
 
 import awswrangler as wr
 import pandas as pd
 
 from config.app import DataLakeConfig
 
+# CLI ensures that input is correctly formatted:
+# | input key |
+# on the
+#  presignurl -> a specific S3 bucket, object name is the request ID, prefix is the model ID
+#
+# s3://bucket/model-id/request-id.csv
+
 
 class PredictionFetcher:
-    def __init__(self, config: DataLakeConfig, user_id: str, request_id: str, model_id: str):
+    def __init__(self, config: DataLakeConfig, user_id: str, request_id: str, model_id: str, dev: bool = False):
         self.config = config
         self.user_id = user_id
         self.request_id = request_id
         # TODO: decide on multi model implementation, for now assume a list of 1 model ID
         self.model_id = model_id
+        self.dev = dev
+
+        if self.dev:
+            logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+            self.logger = logging.getLogger(__name__)
+            self.logger.setLevel(logging.INFO)
+            logging.getLogger("botocore").setLevel(logging.WARNING)
 
     def check_availability(self) -> str:
         # TODO: figure out how we are going to check for available models
         # talk to Nicholas about the order of events here
+
+        # we need to reference the metadata table here, it can also be an athena table
+
         return f"{self.model_id} available in prediction store"
 
     def get_s3_input_location(self) -> str:
@@ -25,14 +44,19 @@ class PredictionFetcher:
         )
 
     def fetch(self, path_to_input: str) -> pd.DataFrame:
+        logger = self.logger
+
+        logger.info("reading and formatting input data")
         input_df = self._read_input_data(path_to_input)
 
+        logger.info("writing input to athena")
         try:
             self._write_inputs_s3(input_df)
         except Exception as e:
             print(f"error {e}")
             raise (e)
 
+        logger.info("fetching outputs from athena")
         try:
             output_df = self._read_predictions_from_s3()
         except Exception as e:
@@ -40,6 +64,13 @@ class PredictionFetcher:
             raise (e)
 
         return output_df
+
+    def _validate_input(self, path_to_input: str) -> None:
+        # check that it is a CSV/text file
+        # check that size is within reasonable bounds
+        # ...
+        # if passes all tests, return True
+        pass
 
     def _read_input_data(self, path_to_input: str) -> pd.DataFrame:
         """Reads input CSV from user and processes it for writing to the data lake
@@ -72,6 +103,7 @@ class PredictionFetcher:
         return df[["user_id", "request_id", "smiles"]]
 
     def _write_inputs_s3(self, input_df: pd.DataFrame) -> None:
+        # TODO: deduplicate repeated inputs
         wr.s3.to_parquet(
             df=input_df,
             path=os.path.join(
@@ -87,6 +119,16 @@ class PredictionFetcher:
 
     def _read_predictions_from_s3(self) -> pd.DataFrame:
         query = f"""
+            with request as (
+                select distinct
+                    *
+                from
+                    requests
+                where
+                    request_id = '{self.request_id}'
+                    and user_id = '{self.user_id}'
+            )
+
             select
                 p.model_id,
                 p.input_key,
@@ -94,11 +136,9 @@ class PredictionFetcher:
                 p.output
             from
                 predictions p
-                left join requests r
+                left join request r
                     on p.smiles = r.smiles
             where
-                r.request_id = '{self.request_id}'
-                and r.user_id = '{self.user_id}'
                 and p.model_id = '{self.model_id}'
         """
 
