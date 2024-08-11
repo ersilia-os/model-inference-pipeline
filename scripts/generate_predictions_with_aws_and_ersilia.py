@@ -94,5 +94,26 @@ if __name__ == "__main__":
 
     # TODO: postprocess predictions
 
-    # TODO: write preds to s3 with aws wrangler
+    df = pd.read_csv("output.csv")
+    columns_to_use = df.columns[-2:]
+    output = df[columns_to_use].to_dict(orient="records")
+    df["prediction"] = output
+    df["model_id"] = model_id
+    df = df[[["key", "input", "output", "model_id"]]]
+    df = df.rename(columns={"key": "input_key", "input": "chemical_formula"})
+    
 
+    # TODO: write preds to s3 with aws wrangler
+    wr.s3.to_parquet(
+        df=df,
+        path=os.path.join(
+            "s3://",
+            "precalculations-bucket",
+            "predictions",
+            f"{model_id}.parquet",
+        ),
+        dataset=True,
+        database="precalcs_test",
+        table="predictions",
+        partition_cols=["model_id"],
+    )
