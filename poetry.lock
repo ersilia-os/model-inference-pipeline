@@ -3226,6 +3226,24 @@ files = [
 ]
 
 [[package]]
+name = "pyairtable"
+version = "2.3.3"
+description = "Python Client for the Airtable API"
+optional = false
+python-versions = "*"
+files = [
+    {file = "pyairtable-2.3.3-py2.py3-none-any.whl", hash = "sha256:2fa872971e31e3e8675cb6d9606362ea8072bbb7971592826edc7010b6afa87b"},
+    {file = "pyairtable-2.3.3.tar.gz", hash = "sha256:6f52bd270d28ba6459b7cc473588e517085a737d70c68e855e6d104972e1121e"},
+]
+
+[package.dependencies]
+inflection = "*"
+pydantic = "*"
+requests = ">=2.22.0"
+typing-extensions = "*"
+urllib3 = ">=1.26"
+
+[[package]]
 name = "pyarrow"
 version = "17.0.0"
 description = "Python library for Apache Arrow"
@@ -4912,4 +4930,4 @@ test = ["big-O", "importlib-resources", "jaraco.functools", "jaraco.itertools", 
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "37d2fecc8ed63df90d3a81a92d3b1a1589f6f90eccd79336903ce6850b0f7d85"
+content-hash = "3747b9172ed027bbb1ba9608025b3b2d43eca94f2d4e69414ccaae362b6def23"
