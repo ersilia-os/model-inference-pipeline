@@ -11,10 +11,6 @@ from aws_cdk import (
     aws_apigateway as apigateway,
 )
 from aws_cdk import (
-    # aws_sqs as sqs,
-    aws_dynamodb as dynamodb,
-)
-from aws_cdk import (
     aws_lambda as lambda_,
 )
 from aws_cdk import (
@@ -27,7 +23,6 @@ dotenv_path = Path("../../config/stack.env")
 load_dotenv(dotenv_path=dotenv_path)
 
 BUCKET_NAME = str(os.getenv("S3_BUCKET_NAME"))
-TABLE_NAME = str(os.getenv("DYNAMODB_TABLE_NAME"))
 HANDLER_NAME = str(os.getenv("API_HANDLER_LAMBDA_NAME"))
 ENDPOINT_NAME = str(os.getenv("API_ENDPOINT_NAME"))
 API_KEY_NAME = str(os.getenv("API_KEY_NAME"))
@@ -46,17 +41,6 @@ class PrecalculatorStack(Stack):
             versioned=False,
         )
 
-        # DynamoDB Table
-        table = dynamodb.TableV2(
-            self,
-            TABLE_NAME,
-            table_name=TABLE_NAME,
-            partition_key=dynamodb.Attribute(name="PK", type=dynamodb.AttributeType.STRING),
-            sort_key=dynamodb.Attribute(name="SK", type=dynamodb.AttributeType.STRING),
-            billing=dynamodb.Billing.on_demand(),
-            removal_policy=RemovalPolicy.RETAIN,  # table is retained upon stack destruction
-        )
-
         # API Lambda
         api_handler = lambda_.Function(
             self,
@@ -65,16 +49,13 @@ class PrecalculatorStack(Stack):
             runtime=lambda_.Runtime.PYTHON_3_10,
             code=lambda_.Code.from_asset("lambda"),
             handler="api_handler.handler",
-            environment={"BUCKET_NAME": bucket.bucket_name, "TABLE_NAME": table.table_name},
+            environment={"BUCKET_NAME": bucket.bucket_name},
             memory_size=512,
             timeout=Duration.seconds(30),
         )
 
         # grant permissions for lambda to write to bucket
         bucket.grant_read_write(api_handler)
-
-        # and read from table
-        table.grant_read_data(api_handler)
 
         # API Gateway
         api = apigateway.LambdaRestApi(
