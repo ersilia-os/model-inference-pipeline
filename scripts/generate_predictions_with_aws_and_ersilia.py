@@ -91,7 +91,7 @@ if __name__ == "__main__":
     # Construct S3 destination path
     s3_destination = f"s3://precalculations-bucket/out/{model_id}/{sha}/{sha}_{numerator - 1:04d}.csv"
 
-    print(f"postprocessing predicitons")
+    print("postprocessing predicitons")
 
     df = pd.read_csv("output.csv")
     columns_to_use = df.columns[-2:]
@@ -101,8 +101,8 @@ if __name__ == "__main__":
     df = df[["key", "input", "output", "model_id"]]
     df = df.rename(columns={"key": "input_key", "input": "smiles"})
 
-    print(f"writing predicitons to s3 {os.path.join("s3://", "precalculations-bucket", "predictions")}")
-    
+    print("writing predicitons to s3")
+
     wr.s3.to_parquet(
         df=df,
         path=os.path.join(
