@@ -22,6 +22,7 @@ install-prod:
 	@if [ "$(shell which poetry)" = "" ]; then \
 		$(MAKE) install-poetry; \
 	fi
+	@$(MAKE) install-ersilia
 	@poetry env use python3 && poetry install --without dev
 
 install-poetry:

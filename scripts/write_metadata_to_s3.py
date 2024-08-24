@@ -11,7 +11,6 @@ dotenv_path = Path("./config/stack.env")  # relative to root of git repo
 load_dotenv(dotenv_path=dotenv_path)
 
 BUCKET_NAME = str(os.getenv("S3_BUCKET_NAME"))
-DYNAMODB_TABLE_NAME = str(os.getenv("DYNAMODB_TABLE_NAME"))
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -39,8 +38,6 @@ if __name__ == "__main__":
     metadata_key = f"meta/{args.model_id}.json"
     s3_uri = get_metadata_s3_uri(metadata_key)
 
-    metadata = get_metadata(
-        BUCKET_NAME, DYNAMODB_TABLE_NAME, metadata_key, s3_uri, args.model_id, args.pipeline_start, args.pipeline_end
-    )
+    metadata = get_metadata(BUCKET_NAME, metadata_key, s3_uri, args.model_id, args.pipeline_start, args.pipeline_end)
 
     write_metadata(BUCKET_NAME, metadata_key, metadata)
