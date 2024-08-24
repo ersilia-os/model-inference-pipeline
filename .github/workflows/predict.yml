@@ -42,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Print system details
-        run: lshw -short
+        run: sudo lshw -short
 
       - name: checkout repo content
         uses: actions/checkout@v4
@@ -59,7 +59,7 @@ jobs:
             aws-region: eu-central-1
 
       - name: Install make
-        run: apt-get update && apt-get install -y make
+        run: sudo apt-get update && sudo apt-get install -y make
 
       - name: Set up Python environment
         uses: actions/setup-python@v2
