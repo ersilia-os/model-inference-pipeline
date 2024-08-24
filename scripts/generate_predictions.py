@@ -23,8 +23,9 @@ def read_input_from_file(path_to_input: str = "reference_library.csv") -> List[s
 
 if __name__ == "__main__":
     input_path = sys.argv[1]
-    output_path = sys.argv[2] if len(sys.argv) > 2 else "prediction_output.csv"
+    output_path = sys.argv[2] if len(sys.argv) > 2 else "prediction_output"
     model_id = sys.argv[3] if len(sys.argv) > 3 else EXAMPLE_MODEL_ID
+    format = sys.argv[4] if len(sys.argv) > 4 else "csv"
 
     input_items = read_input_from_file(input_path)
 
@@ -35,4 +36,9 @@ if __name__ == "__main__":
         predictions = mdl.run(input_items, output="pandas")
         logger.info(f"Inference took {time.time() - start :2f} seconds")
 
-    predictions.to_csv(output_path)
+    if format == "csv":
+        predictions.to_csv(output_path + ".csv")
+    elif format == "parquet":
+        predictions.to_parquet(output_path + ".parquet")
+    else:
+        print("unsupported format")

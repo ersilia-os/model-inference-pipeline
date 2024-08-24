@@ -12,7 +12,14 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) to get started working on this repo.
 
 ### Triggering a pipeline run
 
-The workflow "Run Inference in Parallel" can be triggered from the GitHub UI. `Actions` > `Run Inference in Parallel` > `Run workflow`. Then, simply enter the ID of the Ersilia Model Hub model that you want to run.
+The workflow "Run Inference in Parallel" can be triggered from the GitHub UI or via the [GitHub Actions extension](https://marketplace.visualstudio.com/items?itemName=GitHub.vscode-github-actions) (you may have to enter the name of the branch you want to run the pipeline on if you're using the extension). `Actions` > `Run Inference in Parallel` > `Run workflow`. Then, simply enter the ID of the Ersilia Model Hub model that you want to run.
+
+After entering the ID, you can enter a value for 'sample-only' (1, 10, 50, or 100) to run the pipeline on that many inputs (e.g. for testing purposes), or you can leave it to run the pipeline on the whole reference library (which can take several hours). Once the run begins, logs will appear [here](https://github.com/ersilia-os/model-inference-pipeline/actions).
+
+#### Testing
+If you just want to test the pipeline, it's recommended that you use 100 for sample-only as this will ensure all 50 workers have inputs to process (to modify this functionality, you can add subsets of the reference library to the precalcs bucket in S3 with the file name being reference_library_{n}.csv, where n is the number of inputs in that file). Any one of them having no inputs means the whole pipeline fails, and parametrising the number of workers based on the number of inputs is possible future work.
+
+Alternatively, you can leave sample-only blank and modify the matrices in predict-parallel.yml and serve-parallel.yml to be `[1,2]`, then use test_input.csv to run the pipeline.
 
 ### Querying the precalculation database
 
