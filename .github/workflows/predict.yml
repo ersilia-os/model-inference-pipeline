@@ -68,6 +68,9 @@ jobs:
 
       - name: Run make install
         run: make install
+
+      - name: Activate virtual environment
+        run: source .venv/bin/activate
       
       # - name: Install dependencies
       #   run: |
