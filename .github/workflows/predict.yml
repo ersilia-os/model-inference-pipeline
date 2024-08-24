@@ -19,108 +19,60 @@ on:
         required: true
         type: string
 
-# env:
-  # MODEL_ID env variable is used when this script is run from the individual model repo.
-  # If placing the script in the individual repo, find and replace '${{ inputs.model-id }}' with '$MODEL_ID'
-  # MODEL_ID: ${{ github.event.repository.name }}
-  # Replace ${{ inputs.SHA }} with ${SHA} in the individual model repo case.
-  # SHA: ${{ github.sha }}
-
 jobs:
   infer-and-upload:
     runs-on: ubuntu-latest
     steps:
       - name: Print system details
         run: sudo lshw -short
-      
-      - name: Check into ersilia-os/ersilia repo 
-        uses: actions/checkout@v3
-        with:
-          repository: ersilia-os/ersilia
+
+      - name: checkout repo content
+        uses: actions/checkout@v4
+
+
+      - name: Print contents of the current directory
+        run: ls -la
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@master
         with:
-           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-           aws-region: eu-central-1
+            aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+            aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            aws-region: eu-central-1
 
-      - name: Get input library
+      - name: Install make
+        run: sudo apt-get update && sudo apt-get install -y make
+
+      - name: Set up Python environment
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
+      - name: Run make install
+        run: make install-prod
+      
+      # we need this step as ersilia will use the default conda environment to run the example model during `ersilia serve`
+      # could get around this eventually if we only use conda for env management, but there are complexities around referencing a dev
+      # package from within our own package which poetry makes a lot easier
+      - name: set up conda
         run: |
-          if [[ ${{ inputs.sample-only }} ]]; then
-            echo "Getting subset of reference library"
-            filename="reference_library_${{ inputs.sample-only }}.csv"
-          else
-            echo "Getting whole reference library"
-            filename="reference_library.csv"
-          fi
-          aws s3 cp s3://precalculations-bucket/"$filename" $filename
-
-      - name: Split library by partition variables
-        run: |
-          numerator=${{ inputs.numerator }}
-          denominator=${{ inputs.denominator }}
-          if [[ ${{ inputs.sample-only }} ]]; then
-            filename="reference_library_${{ inputs.sample-only }}.csv"
-          else
-            filename="reference_library.csv"
-          fi
-          
-          ## Total # lines in given reference library
-          total_lines=$(wc -l < "$filename")
-          echo $total_lines
-          
-          # Determine the # of file lines per partition
-          ((lines_per_file = (total_lines + $denominator-1) / $denominator))
-
-          # Split the file
-          split -l $lines_per_file -a 4 -d --additional-suffix=.csv "$filename" partition_
-          
-          # Add 'smiles' to header of all partition files beyond the first
-          for (( i=1; i<$denominator; i++ ))
-          do
-            partition=$(printf "partition_%04d.csv" $i)
-            sed -i '1i smiles' "$partition"
-          done
-
-          # List files in dir
-          ls
-
-      - name: Add conda to system path
-        run: echo $CONDA/bin >> $GITHUB_PATH
-
-      - name: Source conda
-        run: source $CONDA/etc/profile.d/conda.sh
-
-      - name: Set Python to 3.10.10
-        run:
-         conda install -y python=3.10.10
-
-      - name: Install dependencies
-        run: |
-          source activate
-          conda init
-          conda install git-lfs -c conda-forge
-          git-lfs install
-          conda install gh -c conda-forge
-          
-      - name: Install ersilia
-        run: |
-          source activate
-          python --version
-          echo "After conda init"
+          cd ersilia
+          echo $CONDA/bin >> $GITHUB_PATH
+          source $CONDA/etc/profile.d/conda.sh
+          conda install -y python=3.10
           conda init
           python -m pip install -e .[test]
-          
-      - name: Predict partition output and upload
-        run: |
-          numerator=${{ inputs.numerator }}
-          index=$((numerator - 1))
-          source activate
-          echo "Sample model id selected: ${{ inputs.model-id }}"
-          ersilia fetch ${{ inputs.model-id }}
-          ersilia serve ${{ inputs.model-id }}
-          echo "${{ inputs.model-id }} succesfully fetched and served"
-          ersilia api -i $(printf "partition_%04d.csv" $index) -o ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
+          pip install pyairtable
+          cd ..
 
-          aws s3 cp ../${{ inputs.SHA }}$(printf "_%04d.csv" $numerator) s3://precalculations-bucket/out/${{ inputs.model-id }}/${{ inputs.SHA }}$(printf "_%04d.csv" $numerator)
+      - name: Activate virtual environment
+        run: source .venv/bin/activate
+
+      - name: Run Python script to generate predictions and upload to S3
+        env:
+          MODEL_ID: ${{ inputs.model-id }}
+          SHA: ${{ inputs.SHA }}
+          numerator: ${{ inputs.numerator }}
+          sample-only: ${{ inputs.sample-only }}
+          GITHUB_REPOSITORY: ${{ github.event.repository.full_name }}
+        run: .venv/bin/python scripts/generate_predictions_with_aws_and_ersilia.py ci
