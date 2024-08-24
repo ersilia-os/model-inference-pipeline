@@ -7,7 +7,14 @@ import awswrangler as wr
 import boto3
 import pandas as pd
 
-EXAMPLE_MODEL_ID = "eos2zmb"
+TEST_ENV = {
+    "MODEL_ID": "eos2zmb",
+    "SHA": "1234",
+    "numerator": 1,
+    "denominator": 2,
+    "sample-only": 10,
+    "GITHUB_REPOSITORY": "precalculations-bucket",
+}
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -38,15 +45,6 @@ def upload_to_s3_via_cli(local_filename: str, s3_destination: str) -> None:
     subprocess.run(["aws", "s3", "cp", local_filename, s3_destination])
 
 
-TEST_ENV = {
-    "MODEL_ID": "eos2zmb",
-    "SHA": "1234",
-    "numerator": 1,
-    "denominator": 2,
-    "sample-only": 10,
-    "GITHUB_REPOSITORY": "precalculations-bucket",
-}
-
 parser = argparse.ArgumentParser()
 parser.add_argument("-e", "--env", choices=["dev", "ci", "prod"], default="dev", help="Specify environment")
 
@@ -56,43 +54,28 @@ if __name__ == "__main__":
     env_source = TEST_ENV if args.env == "dev" else os.environ
     logger.info(f"environment: {args.env}")
 
-    # Reading inputs from environment variables
-    model_id = env_source.get("MODEL_ID")
-    sha = env_source.get("SHA")
-    numerator = int(env_source.get("numerator"))
-    denominator = int(env_source.get("denominator"))
-    sample_only = env_source.get("sample-only")
+    model_id = env_source.get("MODEL_ID")  # type: ignore
+    sha = env_source.get("SHA")  # type: ignore
+    numerator = int(env_source.get("numerator"))  # type: ignore
+    denominator = int(env_source.get("denominator"))  # type: ignore
+    sample_only = env_source.get("sample-only")  # type: ignore
+    bucket_name = env_source.get("GITHUB_REPOSITORY").replace("/", "-")  # type: ignore
 
-    # Construct bucket name based on GitHub repository
-    bucket_name = env_source.get("GITHUB_REPOSITORY").replace("/", "-")
-
-    # Determine input filename based on sample-only flag
+    # sample-only defines size of smaller reference library files from s3
     input_filename = f"reference_library_{sample_only}.csv" if sample_only else "reference_library.csv"
 
     logger.info(f"fetching input {bucket_name, input_filename} from s3")
-    # Fetch input data from S3
     fetch_input_from_s3(bucket_name, input_filename, input_filename)
 
-    # # Split the input file into partitions
     partitioned_input = split_csv(input_filename, numerator, denominator)
 
-    # # Determine which partition this worker should process
-    # partition_file = partition_files[numerator - 1]
-    output_path_template = f"../{sha}_{numerator - 1:04d}.csv"
-
-    # Generate predictions and save locally
-    # predictions = generate_predictions(input_filename, output_path_template, model_id, sha, numerator)
-
     logger.info(f"calling ersilia for model {model_id}")
-
-    subprocess.run([".venv/bin/ersilia", "-v", "serve", model_id])
+    subprocess.run([".venv/bin/ersilia", "-v", "serve", model_id])  # type: ignore
     subprocess.run([".venv/bin/ersilia", "-v", "run", "-i", partitioned_input, "-o", "output.csv"])
 
-    # Construct S3 destination path
     s3_destination = f"s3://precalculations-bucket/out/{model_id}/{sha}/{sha}_{numerator - 1:04d}.csv"
 
     logger.info("postprocessing predicitons")
-
     df = pd.read_csv("output.csv")
     columns_to_use = df.columns[-2:]
     output = df[columns_to_use].to_dict(orient="records")
