@@ -81,8 +81,8 @@ if __name__ == "__main__":
     # Generate predictions and save locally
     # predictions = generate_predictions(input_filename, output_path_template, model_id, sha, numerator)
 
-    subprocess.run(["ersilia", "serve", model_id])
-    subprocess.run(["ersilia", "run", "-i", partitioned_input, "-o", "output.csv"])
+    subprocess.run([".venv/bin/ersilia", "serve", model_id])
+    subprocess.run([".venv/bin/ersilia", "run", "-i", partitioned_input, "-o", "output.csv"])
 
     # Construct S3 destination path
     s3_destination = f"s3://precalculations-bucket/out/{model_id}/{sha}/{sha}_{numerator - 1:04d}.csv"
