@@ -74,9 +74,10 @@ jobs:
           cd ersilia
           echo $CONDA/bin >> $GITHUB_PATH
           source $CONDA/etc/profile.d/conda.sh
-          conda install -y python=3.10.10
+          conda install -y python=3.10
           conda init
           python -m pip install -e .[test]
+          pip install pyairtable
           cd ..
 
       - name: Activate virtual environment
