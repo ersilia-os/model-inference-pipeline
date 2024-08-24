@@ -46,14 +46,3 @@ jobs:
 
     secrets: inherit
   
-  # trigger-serve-pipeline:
-  #   needs: [start-time, matrix-inference]
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Repository Dispatch
-  #       uses: peter-evans/repository-dispatch@v2
-  #       with:
-  #         token: ${{ secrets.API_TOKEN_GITHUB }}
-  #         repository: ersilia-os/model-inference-pipeline
-  #         event-type: dispatch-serving-after-prediction
-  #         client-payload: '{"model-id": "${{ inputs.model-id }}", "sha": "${{ github.sha }}", "start-time": "${{ needs.start-time.outputs.start-time }}"}'

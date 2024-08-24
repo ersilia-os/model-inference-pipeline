@@ -45,7 +45,7 @@ def get_predictions_from_dataframe(model_id: str, prediction_df: pd.DataFrame) -
 
 
 def get_metadata(
-    bucket: str, table_name: str, metadata_key: str, s3_uri: str, model_id: str, start_time: int, end_time: int
+    bucket: str, metadata_key: str, s3_uri: str, model_id: str, start_time: int, end_time: int
 ) -> Metadata:
     try:
         metadata_obj = s3_client.get_object(Bucket=bucket, Key=metadata_key)
@@ -61,15 +61,5 @@ def get_metadata(
     metadata.preds_last_updated = end_time
     metadata.pipeline_latest_duration = metadata.preds_last_updated - metadata.pipeline_latest_start_time
     metadata.pipeline_meta_s3_uri = s3_uri
-
-    model_id_search = dynamodb_client.scan(
-        TableName=table_name,
-        FilterExpression="SK=:model_id",
-        ExpressionAttributeValues={":model_id": {"S": f"MODELID#{model_id}"}},
-        Select="COUNT",
-    )
-    if model_id_search["Count"] > 0:
-        metadata.preds_in_store = True
-        metadata.total_unique_preds = model_id_search["Count"]
 
     return metadata
