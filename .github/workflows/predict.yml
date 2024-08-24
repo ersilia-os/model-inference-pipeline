@@ -67,7 +67,7 @@ jobs:
           python-version: '3.10'
 
       - name: Run make install
-        run: make install
+        run: make install-prod
 
       - name: Activate virtual environment
         run: source .venv/bin/activate
