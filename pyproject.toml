@@ -20,6 +20,7 @@ python-dotenv = "^1.0.0"
 awswrangler = "^3.9.0"
 numpy = "^1.26.4"
 pyairtable = "^2.3.3"
+ersilia = {path = "ersilia", develop = true}
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
@@ -30,7 +31,7 @@ ipykernel = "^6.25.1"
 jupyter = "^1.0.0"
 pre-commit = "^3.3.3"
 mypy = "^1.5.1"
-ersilia = {path = "ersilia", develop = true}
+
 
 [build-system]
 requires = ["poetry-core"]
