@@ -69,6 +69,9 @@ jobs:
       - name: Run make install
         run: make install-prod
       
+      # we need this step as ersilia will use the default conda environment to run the example model during `ersilia serve`
+      # could get around this eventually if we only use conda for env management, but there are complexities around referencing a dev
+      # package from within our own package which poetry makes a lot easier
       - name: set up conda
         run: |
           cd ersilia
@@ -90,4 +93,4 @@ jobs:
           numerator: ${{ inputs.numerator }}
           sample-only: ${{ inputs.sample-only }}
           GITHUB_REPOSITORY: ${{ github.event.repository.full_name }}
-        run: .venv/bin/python scripts/generate_predictions_with_aws_and_ersilia.py
+        run: .venv/bin/python scripts/generate_predictions_with_aws_and_ersilia.py ci
