@@ -1,7 +1,7 @@
+import argparse
 import logging
 import os
 import subprocess
-import sys
 
 import awswrangler as wr
 import boto3
@@ -47,11 +47,13 @@ TEST_ENV = {
     "GITHUB_REPOSITORY": "precalculations-bucket",
 }
 
+parser = argparse.ArgumentParser()
+parser.add_argument("-e", "--env", choices=["dev", "ci", "prod"], default="dev", help="Specify environment")
+
 if __name__ == "__main__":
-    if sys.argv[1] == "dev":
-        env_source = TEST_ENV
-    else:
-        env_source = os.environ
+    args = parser.parse_args()
+
+    env_source = TEST_ENV if args.env == "dev" else os.environ
 
     # Reading inputs from environment variables
     model_id = env_source.get("MODEL_ID")
