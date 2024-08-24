@@ -17,16 +17,10 @@ def split_csv(input_path: str, numerator: int, denominator: int) -> str:
     df = pd.read_csv(input_path)
 
     total_length = len(df)
-    print(total_length)
-
     chunk_size = total_length // denominator
-    print(chunk_size)
-
 
     start_row = (numerator-1) * chunk_size
     end_row = start_row + chunk_size
-
-    print(start_row, end_row)
 
     df = df.iloc[start_row:end_row]
     df.to_csv("input.csv", index=False)
@@ -92,15 +86,13 @@ if __name__ == "__main__":
     # Construct S3 destination path
     s3_destination = f"s3://precalculations-bucket/out/{model_id}/{sha}/{sha}_{numerator - 1:04d}.csv"
 
-    # TODO: postprocess predictions
-
     df = pd.read_csv("output.csv")
     columns_to_use = df.columns[-2:]
     output = df[columns_to_use].to_dict(orient="records")
-    df["prediction"] = output
+    df["output"] = output
     df["model_id"] = model_id
-    df = df[[["key", "input", "output", "model_id"]]]
-    df = df.rename(columns={"key": "input_key", "input": "chemical_formula"})
+    df = df[["key", "input", "output", "model_id"]]
+    df = df.rename(columns={"key": "input_key", "input": "smiles"})
     
 
     # TODO: write preds to s3 with aws wrangler
@@ -110,7 +102,6 @@ if __name__ == "__main__":
             "s3://",
             "precalculations-bucket",
             "predictions",
-            f"{model_id}.parquet",
         ),
         dataset=True,
         database="precalcs_test",
