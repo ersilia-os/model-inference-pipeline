@@ -54,6 +54,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     env_source = TEST_ENV if args.env == "dev" else os.environ
+    print(f"environment: {args.env}")
 
     # Reading inputs from environment variables
     model_id = env_source.get("MODEL_ID")
@@ -68,6 +69,7 @@ if __name__ == "__main__":
     # Determine input filename based on sample-only flag
     input_filename = f"reference_library_{sample_only}.csv" if sample_only else "reference_library.csv"
 
+    print(f"fetching input {bucket_name, input_filename, input_filename} from s3")
     # Fetch input data from S3
     fetch_input_from_s3(bucket_name, input_filename, input_filename)
 
@@ -81,11 +83,15 @@ if __name__ == "__main__":
     # Generate predictions and save locally
     # predictions = generate_predictions(input_filename, output_path_template, model_id, sha, numerator)
 
-    subprocess.run([".venv/bin/ersilia", "serve", model_id])
-    subprocess.run([".venv/bin/ersilia", "run", "-i", partitioned_input, "-o", "output.csv"])
+    print(f"calling ersilia for model {model_id}")
+
+    subprocess.run([".venv/bin/ersilia", "-v", "serve", model_id])
+    subprocess.run([".venv/bin/ersilia", "-v", "run", "-i", partitioned_input, "-o", "output.csv"])
 
     # Construct S3 destination path
     s3_destination = f"s3://precalculations-bucket/out/{model_id}/{sha}/{sha}_{numerator - 1:04d}.csv"
+
+    print(f"postprocessing predicitons")
 
     df = pd.read_csv("output.csv")
     columns_to_use = df.columns[-2:]
@@ -95,7 +101,8 @@ if __name__ == "__main__":
     df = df[["key", "input", "output", "model_id"]]
     df = df.rename(columns={"key": "input_key", "input": "smiles"})
 
-    # TODO: write preds to s3 with aws wrangler
+    print(f"writing predicitons to s3 {os.path.join("s3://", "precalculations-bucket", "predictions")}")
+    
     wr.s3.to_parquet(
         df=df,
         path=os.path.join(
