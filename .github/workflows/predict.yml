@@ -77,7 +77,7 @@ jobs:
             ${{ runner.os }}-docker-${{ inputs.model-id }}
 
       - name: Load Docker image
-        if: steps.cache.outputs.cache-hit != 'true'
+        if: steps.cache.outputs.cache-hit == 'true'
         run: |
           docker load -i /tmp/${{ inputs.model-id }}.tar
 
