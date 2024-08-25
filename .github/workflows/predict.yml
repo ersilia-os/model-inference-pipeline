@@ -74,19 +74,19 @@ jobs:
           sudo rm -rf /opt/ghc
           sudo rm -rf "/usr/local/share/boost"
 
-      - name: Restore cached Docker image
-        id: cache
-        uses: actions/cache@v3
-        with:
-          path: /tmp/${{ inputs.model-id }}.tar
-          key: ${{ runner.os }}-docker-${{ inputs.model-id }}
-          restore-keys: |
-            ${{ runner.os }}-docker-${{ inputs.model-id }}
+      # - name: Restore cached Docker image
+      #   id: cache
+      #   uses: actions/cache@v3
+      #   with:
+      #     path: /tmp/${{ inputs.model-id }}.tar
+      #     key: ${{ runner.os }}-docker-${{ inputs.model-id }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-docker-${{ inputs.model-id }}
 
-      - name: Load Docker image
-        if: steps.cache.outputs.cache-hit == 'true'
-        run: |
-          docker load -i /tmp/${{ inputs.model-id }}.tar
+      # - name: Load Docker image
+      #   if: steps.cache.outputs.cache-hit == 'true'
+      #   run: |
+      #     docker load -i /tmp/${{ inputs.model-id }}.tar
 
       - name: Run Python script to generate predictions and upload to S3
         env:
