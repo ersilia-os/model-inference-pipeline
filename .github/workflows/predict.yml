@@ -5,10 +5,10 @@ on:
     inputs:
       numerator:
         required: true
-        type: number
+        type: string
       denominator:
         required: true
-        type: number
+        type: string
       model-id:
         required: true
         type: string
