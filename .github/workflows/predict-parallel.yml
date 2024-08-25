@@ -30,26 +30,6 @@ jobs:
   pull-model-image:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          repository: ersilia-os/ersilia
-      
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-        
-      - name: set up ersilia
-        run: |
-          echo $CONDA/bin >> $GITHUB_PATH
-          source $CONDA/etc/profile.d/conda.sh
-          conda install -y python=3.10
-          conda init
-          conda install git-lfs -c conda-forge
-          git-lfs install
-          conda install gh -c conda-forge
-          python -m pip install -e .[test]
-          pip install pyairtable
-
       - name: cache model Docker image
         id: cache
         uses: actions/cache@v3
@@ -59,11 +39,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-docker-${{ inputs.model-id }}
 
-      - name: fetch and save requested model image
+      - name: pull and save requested model image
         if: steps.cache.outputs.cache-hit != 'true'
         run: |
-          source activate
-          ersilia fetch --from_dockerhub ${{ inputs.model-id }}
+          docker pull ersiliaos/${{ inputs.model-id }}:latest
           docker save ersiliaos/${{ inputs.model-id }} -o /tmp/${{ inputs.model-id }}.tar
       
 
