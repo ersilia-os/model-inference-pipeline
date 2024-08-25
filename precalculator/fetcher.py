@@ -7,27 +7,20 @@ import pandas as pd
 
 from config.app import DataLakeConfig
 
-# CLI ensures that input is correctly formatted:
-# | input key |
-# on the
-#  presignurl -> a specific S3 bucket, object name is the request ID, prefix is the model ID
-#
-# s3://bucket/model-id/request-id.csv
-
 
 class PredictionFetcher:
     def __init__(self, config: DataLakeConfig, user_id: str, request_id: str, model_id: str, dev: bool = False):
         self.config = config
         self.user_id = user_id
         self.request_id = request_id
-        # TODO: decide on multi model implementation, for now assume a list of 1 model ID
         self.model_id = model_id
         self.dev = dev
 
+        self.logger = logging.getLogger("PredictionFetcher")
+        self.logger.setLevel(logging.INFO)
+
         if self.dev:
             logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-            self.logger = logging.getLogger(__name__)
-            self.logger.setLevel(logging.INFO)
             logging.getLogger("botocore").setLevel(logging.WARNING)
 
     def check_availability(self) -> str:
@@ -50,18 +43,10 @@ class PredictionFetcher:
         input_df = self._read_input_data(path_to_input)
 
         logger.info("writing input to athena")
-        try:
-            self._write_inputs_s3(input_df)
-        except Exception as e:
-            print(f"error {e}")
-            raise (e)
+        self._write_inputs_s3(input_df)
 
         logger.info("fetching outputs from athena")
-        try:
-            output_df = self._read_predictions_from_s3()
-        except Exception as e:
-            print(f"error {e}")
-            raise (e)
+        output_df = self._read_predictions_from_s3()
 
         return output_df
 

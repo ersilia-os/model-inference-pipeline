@@ -1,44 +1,63 @@
+import argparse
 import logging
-import sys
-import time
-from typing import List
+import os
 
-from ersilia import ErsiliaModel  # type: ignore
+from config.app import DataLakeConfig, WorkerConfig
+from precalculator.writer import PredictionWriter
 
-EXAMPLE_MODEL_ID = "eos2zmb"
+TEST_ENV = {
+    "INPUT_MODEL_ID": "eos2zmb",
+    "INPUT_SHA": "1234",
+    "INPUT_NUMERATOR": 1,
+    "INPUT_DENOMINATOR": 2,
+    "INPUT_SAMPLE_ONLY": 10,
+}
 
-logger = logging.Logger("logger")
+logger = logging.getLogger("GeneratePredictionsScript")
+logger.setLevel(logging.INFO)
 
-
-def read_input_from_file(path_to_input: str = "reference_library.csv") -> List[str]:
-    start = time.time()
-    with open(path_to_input, "r") as file:
-        contents = file.readlines()
-    logger.info(f"Reading took {time.time() - start :2f} seconds")
-
-    logger.info(f"Input file has {len(contents)} rows")
-
-    return contents
-
+parser = argparse.ArgumentParser()
+parser.add_argument("-e", "--env", choices=["dev", "ci", "prod"], default="dev", help="Specify environment")
 
 if __name__ == "__main__":
-    input_path = sys.argv[1]
-    output_path = sys.argv[2] if len(sys.argv) > 2 else "prediction_output"
-    model_id = sys.argv[3] if len(sys.argv) > 3 else EXAMPLE_MODEL_ID
-    format = sys.argv[4] if len(sys.argv) > 4 else "csv"
+    args = parser.parse_args()
 
-    input_items = read_input_from_file(input_path)
+    env_source = os.environ
+    dev = False
 
-    with ErsiliaModel(model_id) as mdl:
-        logger.info(f"Fetched model {model_id}")
+    if args.env == "dev":
+        env_source = TEST_ENV
+        dev = True
 
-        start = time.time()
-        predictions = mdl.run(input_items, output="pandas")
-        logger.info(f"Inference took {time.time() - start :2f} seconds")
+    logger.info(f"Environment: {args.env}")
 
-    if format == "csv":
-        predictions.to_csv(output_path + ".csv")  # type: ignore
-    elif format == "parquet":
-        predictions.to_parquet(output_path + ".parquet")  # type: ignore
-    else:
-        print("unsupported format")
+    logger.info("Setting up writer configuration")
+    model_id = env_source.get("INPUT_MODEL_ID")  # type: ignore
+    sha = env_source.get("INPUT_SHA")  # type: ignore
+    numerator = int(env_source.get("INPUT_NUMERATOR"))  # type: ignore
+    denominator = int(env_source.get("INPUT_DENOMINATOR"))  # type: ignore
+    sample_only = env_source.get("INPUT_SAMPLE_ONLY")  # type: ignore
+
+    data_config = DataLakeConfig()
+    worker_config = WorkerConfig(
+        git_sha=sha,
+        denominator=denominator,
+        numerator=numerator,
+        sample=sample_only,
+    )
+
+    logger.debug(
+        "Configured writer with following settings: \n%s",
+        "\n".join(f"{k}: {v}" for k, v in data_config.model_dump().items()),
+        "\n".join(f"{k}: {v}" for k, v in worker_config.model_dump().items()),
+    )
+
+    writer = PredictionWriter(data_config=data_config, worker_config=worker_config, model_id=model_id, dev=dev)
+
+    input_file = writer.fetch()
+
+    output_file = writer.predict(input_file)
+
+    df_predictions = writer.postprocess(output_file)
+
+    writer.write_to_lake(df_predictions)

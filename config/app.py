@@ -1,3 +1,6 @@
+from typing import Optional
+
+from pydantic import BaseModel
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -12,3 +15,10 @@ class DataLakeConfig(BaseSettings):
     athena_database: str
     athena_prediction_table: str
     athena_request_table: str
+
+
+class WorkerConfig(BaseModel):
+    git_sha: str
+    denominator: int    # the total number of workers to split data over
+    numerator: int      # the number assigned to this worker
+    sample: Optional[int] = None  # sample size of reference library (in percentage terms, 0-100)
