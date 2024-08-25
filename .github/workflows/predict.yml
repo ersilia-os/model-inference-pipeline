@@ -75,4 +75,4 @@ jobs:
           INPUT_NUMERATOR: ${{ inputs.numerator }}
           INPUT_DENOMINATOR: ${{ inputs.denominator }}
           INPUT_SAMPLE_ONLY: ${{ inputs.sample-only }}
-        run: .venv/bin/python scripts/generate_predictions.py prod
+        run: .venv/bin/python scripts/generate_predictions.py --env prod
