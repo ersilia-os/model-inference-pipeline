@@ -21,47 +21,6 @@ If you just want to test the pipeline, it's recommended that you use 100 for sam
 
 Alternatively, you can leave sample-only blank and modify the matrices in predict-parallel.yml and serve-parallel.yml to be `[1,2]`, then use test_input.csv to run the pipeline.
 
-### Querying the precalculation database
-
-Predictions end up being written to DynamoDB, where they can be retrieved via the precalculations API endpoint. Find the endpoint URL on AWS in the API Gateway console.
-
-To query the endpoint, we need:
-
-1. an API key
-2. Ersilia model ID for desired model
-3. InChiKey(s) of desired inputs
-
-
-The request body has the following schema:
-```
-{
-  "$schema": "http://json-schema.org/draft/2020-12/schema#",
-  "type": "object",
-  "properties": {
-    "modelId": {
-      "type": "string"
-    },
-    "inputKeyArray": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    }
-  },
-  "required": ["modelId", "inputKeyArray"]
-}
-```
-example:
-```
-{
-    "modelId": "eos92sw",
-    "inputKeyArray":[
-            "PCQFQFRJSWBMEL-UHFFFAOYSA-N",
-            "MRSBJIAZTHGJAP-UHFFFAOYSA-N"
-        ]
-}
-```
-
 ## Architecture and Cloud Infrastructure
 
 ![architecture diagram](docs/architecture-diagram.png)

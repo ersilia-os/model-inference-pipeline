@@ -16,7 +16,7 @@ install:
 	@if [ "$(shell which poetry)" = "" ]; then \
 		$(MAKE) install-poetry; \
 	fi
-	@$(MAKE) install-ersilia setup-poetry install-hooks
+	@$(MAKE) setup-poetry install-hooks
 
 install-prod:
 	@if [ "$(shell which poetry)" = "" ]; then \
@@ -35,7 +35,7 @@ setup-poetry:
 
 ## clean - Remove the virtual environment and clear out .pyc files
 clean:
-	rm -rf $(VIRTUAL_ENV) dist *.egg-info .coverage
+	rm -rf $(VIRTUAL_ENV) dist *.egg-info .coverage ersilia
 	find . -name '*.pyc' -delete
 
 ## black - Runs the Black Python formatter against the project
