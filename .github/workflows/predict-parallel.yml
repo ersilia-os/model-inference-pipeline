@@ -49,14 +49,9 @@ jobs:
           conda install gh -c conda-forge
           python -m pip install -e .[test]
           pip install pyairtable
-      
-      - name: fetch and save requested model image
-        run: |
-          source activate
-          ersilia fetch ${{ inputs.model-id }}
-          docker save ersiliaos/${{ inputs.model-id }} -o /tmp/${{ inputs.model-id }}.tar
-      
+
       - name: cache model Docker image
+        id: cache
         uses: actions/cache@v3
         with:
           path: /tmp/${{ inputs.model-id }}.tar
@@ -64,7 +59,16 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-docker-${{ inputs.model-id }}
 
+      - name: fetch and save requested model image
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: |
+          source activate
+          ersilia fetch --from_dockerhub ${{ inputs.model-id }}
+          docker save ersiliaos/${{ inputs.model-id }} -o /tmp/${{ inputs.model-id }}.tar
+      
+
   generate-matrix:
+    needs: pull-model-image
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
