@@ -30,6 +30,12 @@ jobs:
   pull-model-image:
     runs-on: ubuntu-latest
     steps:
+      - name: Remove unnecessary files
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
       - name: cache model Docker image
         id: cache
         uses: actions/cache@v3
