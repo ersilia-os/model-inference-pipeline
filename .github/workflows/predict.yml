@@ -67,6 +67,13 @@ jobs:
       - name: Activate virtual environment
         run: source .venv/bin/activate
       
+      - name: Remove unnecessary files
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+
       - name: Restore cached Docker image
         id: cache
         uses: actions/cache@v3
