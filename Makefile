@@ -16,7 +16,7 @@ install:
 	@if [ "$(shell which poetry)" = "" ]; then \
 		$(MAKE) install-poetry; \
 	fi
-	@$(MAKE) setup-poetry install-hooks
+	@$(MAKE) install-ersilia setup-poetry install-hooks
 
 install-prod:
 	@if [ "$(shell which poetry)" = "" ]; then \

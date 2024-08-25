@@ -26,6 +26,7 @@ class PredictionWriter:
         self.worker_config = worker_config
         self.model_id = model_id
         self.s3 = boto3.client("s3")
+        self.dev = dev
 
         self.logger = logging.getLogger("PredictionWriter")
         self.logger.setLevel(logging.INFO)

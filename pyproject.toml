@@ -18,6 +18,7 @@ awswrangler = "^3.9.0"
 numpy = "^1.26.4"
 pyairtable = "^2.3.3"
 ersilia = {path = "ersilia", develop = true}
+pydantic-settings = "^2.4.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.0"
