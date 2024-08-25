@@ -35,13 +35,14 @@ jobs:
     steps:
       - id: set-matrix
         run: |
-          start=1
+          start='1'
           end=${{ inputs.n-workers }}
           matrix=$(seq -s ',' $start $end)
           echo "matrix=[${matrix}]" >> $GITHUB_OUTPUT
 
 
   matrix-inference:
+    needs: generate-matrix
     if: github.repository != 'ersilia-os/eos-template'
 
     strategy:
