@@ -19,6 +19,6 @@ class DataLakeConfig(BaseSettings):
 
 class WorkerConfig(BaseModel):
     git_sha: str
-    denominator: int    # the total number of workers to split data over
-    numerator: int      # the number assigned to this worker
-    sample: Optional[int] = None  # sample size of reference library (in percentage terms, 0-100)
+    denominator: int  # the total number of workers to split data over
+    numerator: int  # the number assigned to this worker
+    sample: Optional[str] = None  # sample size of reference library (in number of rows)

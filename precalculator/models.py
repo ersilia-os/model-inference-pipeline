@@ -1,4 +1,3 @@
-
 import pandas as pd
 from pydantic import BaseModel, Field
 
@@ -41,7 +40,7 @@ def validate_dataframe_schema(df: pd.DataFrame, model: BaseModel) -> None:
         else:
             pandas_dtype = df[field_name].dtype
             pydantic_type = field.annotation
-            if not check_type_compatibility(pandas_dtype, pydantic_type):
+            if not _check_type_compatibility(pandas_dtype, pydantic_type):
                 errors.append(f"Column {field_name} has type {pandas_dtype}, expected {pydantic_type}")
 
     for column in df.columns:
@@ -52,7 +51,7 @@ def validate_dataframe_schema(df: pd.DataFrame, model: BaseModel) -> None:
         raise SchemaValidationError(errors)
 
 
-def check_type_compatibility(pandas_dtype, pydantic_type):
+def _check_type_compatibility(pandas_dtype, pydantic_type) -> bool:  # noqa: ANN001
     type_map = {
         "object": [str, dict, list],
         "int64": [int],
@@ -60,4 +59,4 @@ def check_type_compatibility(pandas_dtype, pydantic_type):
         "bool": [bool],
         "datetime64": [pd.Timestamp],
     }
-    return pydantic_type in type_map.get(str(pandas_dtype))
+    return pydantic_type in type_map.get(str(pandas_dtype))  # type: ignore

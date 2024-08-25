@@ -57,7 +57,7 @@ class PredictionWriter:
 
         partition_metadata = self._split_csv()
 
-        logger.info(f"Predicting for rows {partition_metadata[0]} to {partition_metadata[1]}")
+        logger.info(f"Partitioned rows {partition_metadata[0]} to {partition_metadata[1]}")
 
         return PROCESSED_FILE_NAME
 
@@ -103,8 +103,8 @@ class PredictionWriter:
 
         return df
 
-    def write_to_lake(self, outputs: pd.DataFrame):
-        validate_dataframe_schema(outputs, Prediction)
+    def write_to_lake(self, outputs: pd.DataFrame) -> None:
+        validate_dataframe_schema(outputs, Prediction)  # type: ignore
 
         wr.s3.to_parquet(
             df=outputs,
