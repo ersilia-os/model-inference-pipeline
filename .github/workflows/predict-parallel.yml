@@ -27,7 +27,43 @@ jobs:
         id: start-time
         run: echo "start-time=$(date +%s)" >> "$GITHUB_OUTPUT"
   
-  
+  pull-model-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: ersilia-os/ersilia
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+        
+      - name: set up ersilia
+        run: |
+          echo $CONDA/bin >> $GITHUB_PATH
+          source $CONDA/etc/profile.d/conda.sh
+          conda install -y python=3.10
+          conda init
+          conda install git-lfs -c conda-forge
+          git-lfs install
+          conda install gh -c conda-forge
+          python -m pip install -e .[test]
+          pip install pyairtable
+      
+      - name: fetch and save requested model image
+        run: |
+          source activate
+          ersilia fetch ${{ inputs.model-id }}
+          docker save ersiliaos/${{ inputs.model-id }} -o /tmp/${{ inputs.model-id }}.tar
+      
+      - name: cache model Docker image
+        uses: actions/cache@v3
+        with:
+          path: /tmp/${{ inputs.model-id }}.tar
+          key: ${{ runner.os }}-docker-${{ inputs.model-id }}
+          restore-keys: |
+            ${{ runner.os }}-docker-${{ inputs.model-id }}
+
   generate-matrix:
     runs-on: ubuntu-latest
     outputs:
