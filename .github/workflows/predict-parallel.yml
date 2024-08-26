@@ -8,6 +8,11 @@ on:
       sample-only:
         required: false
         type: string
+      n-workers:
+        description: 'number of workers to use (max 50)'
+        required: true
+        default: '50'
+        type: string
 
 permissions:
   contents: read
@@ -21,25 +26,58 @@ jobs:
       - name: Get start time
         id: start-time
         run: echo "start-time=$(date +%s)" >> "$GITHUB_OUTPUT"
+  
+  # pull-model-image:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Remove unnecessary files
+  #       run: |
+  #         sudo rm -rf /usr/share/dotnet
+  #         sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+  #         sudo rm -rf /opt/ghc
+  #         sudo rm -rf "/usr/local/share/boost"
+  #     - name: cache model Docker image
+  #       id: cache
+  #       uses: actions/cache@v3
+  #       with:
+  #         path: /tmp/${{ inputs.model-id }}.tar
+  #         key: ${{ runner.os }}-docker-${{ inputs.model-id }}
+  #         restore-keys: |
+  #           ${{ runner.os }}-docker-${{ inputs.model-id }}
+
+  #     - name: pull and save requested model image
+  #       if: steps.cache.outputs.cache-hit != 'true'
+  #       run: |
+  #         docker pull ersiliaos/${{ inputs.model-id }}:latest
+  #         docker save ersiliaos/${{ inputs.model-id }} -o /tmp/${{ inputs.model-id }}.tar
+      
+
+  generate-matrix:
+    # needs: pull-model-image
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          start='1'
+          end=${{ inputs.n-workers }}
+          matrix=$(seq -s ',' $start $end)
+          echo "matrix=[${matrix}]" >> $GITHUB_OUTPUT
+
 
   matrix-inference:
+    needs: generate-matrix
     if: github.repository != 'ersilia-os/eos-template'
 
     strategy:
       matrix:
-        # numerator: [
-        #  1,2,3,4,5,6,7,8,9,10,
-        #  11,12,13,14,15,16,17,18,19,20,
-        #  21,22,23,24,25,26,27,28,29,30,
-        #  31,32,33,34,35,36,37,38,39,40,
-        #  41,42,43,44,45,46,47,48,49,50
-        # ]
-        numerator: [1]
+        numerator: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
 
     uses: ./.github/workflows/predict.yml
     with:
       numerator: ${{ matrix.numerator }}
-      denominator: 50
+      denominator: ${{ inputs.n-workers }}
       model-id: ${{ inputs.model-id }}
       sample-only: ${{ inputs.sample-only }}
       SHA: ${{ github.sha }}
