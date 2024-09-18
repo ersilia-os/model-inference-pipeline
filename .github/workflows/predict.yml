@@ -72,4 +72,4 @@ jobs:
           numerator: ${{ inputs.numerator }}
           sample-only: ${{ inputs.sample-only }}
           GITHUB_REPOSITORY: ${{ github.event.repository.full_name }}
-        run: .venv/bin/python scripts/generate_predictions_with_aws_and_ersilia.py
+        run: .venv/bin/python scripts/generate_predictions.py --env ci
