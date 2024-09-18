@@ -67,9 +67,10 @@ jobs:
 
       - name: Run Python script to generate predictions and upload to S3
         env:
-          MODEL_ID: ${{ inputs.model-id }}
-          SHA: ${{ inputs.SHA }}
-          numerator: ${{ inputs.numerator }}
-          sample-only: ${{ inputs.sample-only }}
+          INPUT_MODEL_ID: ${{ inputs.model-id }}
+          INPUT_SHA: ${{ inputs.SHA }}
+          INPUT_NUMERATOR: ${{ inputs.numerator }}
+          INPUT_DENOMINATOR: ${{ inputs.denominator }}
+          INPUT_SAMPLE_ONLY: ${{ inputs.sample-only }}
           GITHUB_REPOSITORY: ${{ github.event.repository.full_name }}
         run: .venv/bin/python scripts/generate_predictions.py --env ci
