@@ -12,11 +12,11 @@ on:
       model-id:
         required: true
         type: string
-      sha:
-        required: true
-        type: string
       sample-only:
         required: false
+        type: string
+      SHA:
+        required: true
         type: string
 
 jobs:
@@ -44,15 +44,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y make
 
       - name: Set up Python environment
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v2
         with:
           python-version: '3.10'
-          cache: 'pip'
-      - run: make install-prod
+
+      - name: Run make install
+        run: make install-prod
       
-      # we need this step as ersilia will use the default conda environment to run the example model during `ersilia serve`
-      # could get around this eventually if we only use conda for env management, but there are complexities around referencing a dev
-      # package from within our own package which poetry makes a lot easier
       - name: set up conda
         run: |
           cd ersilia
@@ -66,27 +64,6 @@ jobs:
 
       - name: Activate virtual environment
         run: source .venv/bin/activate
-      
-      - name: Remove unnecessary files
-        run: |
-          sudo rm -rf /usr/share/dotnet
-          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
-          sudo rm -rf /opt/ghc
-          sudo rm -rf "/usr/local/share/boost"
-
-      # - name: Restore cached Docker image
-      #   id: cache
-      #   uses: actions/cache@v3
-      #   with:
-      #     path: /tmp/${{ inputs.model-id }}.tar
-      #     key: ${{ runner.os }}-docker-${{ inputs.model-id }}
-      #     restore-keys: |
-      #       ${{ runner.os }}-docker-${{ inputs.model-id }}
-
-      # - name: Load Docker image
-      #   if: steps.cache.outputs.cache-hit == 'true'
-      #   run: |
-      #     docker load -i /tmp/${{ inputs.model-id }}.tar
 
       - name: Run Python script to generate predictions and upload to S3
         env:
@@ -95,4 +72,5 @@ jobs:
           INPUT_NUMERATOR: ${{ inputs.numerator }}
           INPUT_DENOMINATOR: ${{ inputs.denominator }}
           INPUT_SAMPLE_ONLY: ${{ inputs.sample-only }}
-        run: .venv/bin/python scripts/generate_predictions.py --env prod
+          GITHUB_REPOSITORY: ${{ github.event.repository.full_name }}
+        run: .venv/bin/python scripts/generate_predictions.py --env ci
