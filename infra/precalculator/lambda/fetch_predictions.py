@@ -1,13 +1,11 @@
-import json
 import boto3
 import logging
 import os
 import sys
-import pandas as pd
 import awswrangler as wr
 
 
-def lambda_handler(event: dict, context: dict) -> dict:
+def handler(event: dict, context: dict) -> dict:
     """Fetch predictions
 
     Args:
@@ -20,18 +18,16 @@ def lambda_handler(event: dict, context: dict) -> dict:
     request_id = event["queryStringParameters"]["requestid"]
     model_id = event["queryStringParameters"]["modelid"]
 
-    config = None  # TODO: parametrise file paths via config file
-    fetcher = PredictionFetcher(config, request_id, model_id)
+    fetcher = PredictionFetcher(request_id, model_id)
     path_to_input = fetcher.get_s3_input_location()
     output_s3_url = fetcher.fetch(path_to_input)
-    return {"statusCode": 200, "body": output_s3_url}
+    return {"statusCode": 200, "headers": {"Content-Type": "application/json"}, "body": output_s3_url}
 
 
-# TODO: merge PredictionFetchers and create deployment
-# package using model-inference-pipeline repo
+# TODO: merge PredictionFetchers in model-inference-pipeline repo and
+# maybe create deployment package
 class PredictionFetcher:
-    def __init__(self, config, request_id: str, model_id: str, dev: bool = False):
-        self.config = config
+    def __init__(self, request_id: str, model_id: str, dev: bool = False):
         self.request_id = request_id
         self.model_id = model_id
         self.dev = dev
@@ -44,7 +40,13 @@ class PredictionFetcher:
             logging.getLogger("botocore").setLevel(logging.WARNING)
 
     def get_s3_input_location(self) -> str:
-        return os.path.join("s3://", "precalculations-bucket", "uploads", self.model_id, f"{self.request_id}.csv")
+        return os.path.join(
+            "s3://",
+            os.environ.get("BUCKET_NAME"),
+            os.environ.get("S3_UPLOAD_PREFIX"),
+            self.model_id,
+            f"{self.request_id}.csv",
+        )
 
     def fetch(self, path_to_input: str):
         logger = self.logger
@@ -102,17 +104,17 @@ class PredictionFetcher:
             df=input_df,
             path=os.path.join(
                 "s3://",
-                "precalculations-bucket",
-                "in/test",
+                os.environ.get("BUCKET_NAME"),
+                os.environ.get("S3_INPUT_PREFIX"),
             ),
             dataset=True,
-            database="precalcs_test",
-            table="requests",
+            database=os.environ.get("ATHENA_DATABASE"),
+            table=os.environ.get("ATHENA_REQUEST_TABLE"),
             partition_cols=["request_id"],
         )
 
     def _read_predictions_from_s3(self):
-        # TODO: remove DISTINCT after inputs have been deduplicated
+        # TODO: remove DISTINCT after inputs have been deduplicated (see TODO in _write_inputs_s3)
         query = f"""
             with request as (
                 select distinct
@@ -135,7 +137,7 @@ class PredictionFetcher:
                 p.model_id = '{self.model_id}'
         """
 
-        df_out = wr.athena.read_sql_query(query, database="precalcs_test")
+        df_out = wr.athena.read_sql_query(query, database=os.environ.get("ATHENA_DATABASE"))
 
         return df_out
 
@@ -150,7 +152,13 @@ class PredictionFetcher:
         """
         wr.s3.to_csv(
             df=output_df,
-            path=os.path.join("s3://", "precalculations-bucket", "out", f"{self.model_id}", f"{self.request_id}.csv"),
+            path=os.path.join(
+                "s3://",
+                os.environ.get("BUCKET_NAME"),
+                os.environ.get("S3_OUTPUT_PREFIX"),
+                f"{self.model_id}",
+                f"{self.request_id}.csv",
+            ),
             index=False,
         )
 
@@ -167,9 +175,12 @@ class PredictionFetcher:
         try:
             presigned_url = s3_client.generate_presigned_url(
                 "get_object",
-                Params={"Bucket": "precalculations-bucket", "Key": f"out/{self.model_id}/{self.request_id}.csv"},
+                Params={
+                    "Bucket": os.environ.get("BUCKET_NAME"),
+                    "Key": f"{os.environ.get('S3_OUTPUT_PREFIX')}/{self.model_id}/{self.request_id}.csv",
+                },
                 ExpiresIn=3600,
             )
             return presigned_url
         except Exception as e:
-            self.logger.info("Error generating presigned URL: ", e)
+            self.logger.info(f"Error generating presigned URL: {e}")

@@ -1,6 +1,5 @@
-import json
+import os
 import boto3
-from config.app import DataLakeConfig
 
 
 def handler(event: dict, context: dict) -> bool:
@@ -19,11 +18,13 @@ def handler(event: dict, context: dict) -> bool:
 
     try:
         response = glue_client.get_partition(
-            DatabaseName="precalcs_test", TableName="predictions", PartitionValues=[model_id]
+            DatabaseName=os.environ.get("ATHENA_DATABASE"),
+            TableName=os.environ.get("ATHENA_PREDICTION_TABLE"),
+            PartitionValues=[model_id],
         )
         has_model = len(response["Partition"]["Values"]) > 0
     except glue_client.exceptions.EntityNotFoundException:
         print(f"Model {model_id} not found")
     except Exception as e:
         print(f"An error occurred: {str(e)}")
-    return {"statusCode": 200, "body": has_model}
+    return {"statusCode": 200, "headers": {"Content-Type": "application/json"}, "body": has_model}
