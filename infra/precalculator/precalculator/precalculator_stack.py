@@ -218,7 +218,7 @@ class PrecalculatorStack(Stack):
             "apigateway",
             principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
             action="lambda:InvokeFunction",
-            source_arn=f"arn:aws:execute-api:{self.region}:{self.account}:{api.arn_for_execute_api()}/*/POST/precalculations/upload-destination",
+            source_arn=f"arn:aws:execute-api:{self.region}:{self.account}:{api.arn_for_execute_api()}/*/POST/precalculations/predictions",
         )
 
         # GET /precalculations/upload-destination
@@ -236,7 +236,7 @@ class PrecalculatorStack(Stack):
             "apigateway",
             principal=iam.ServicePrincipal("apigateway.amazonaws.com"),
             action="lambda:InvokeFunction",
-            source_arn=f"arn:aws:execute-api:{self.region}:{self.account}:{api.arn_for_execute_api()}/*/POST/precalculations/predictions",
+            source_arn=f"arn:aws:execute-api:{self.region}:{self.account}:{api.arn_for_execute_api()}/*/GET/precalculations/upload-destination",
         )
 
         ### Athena ###
