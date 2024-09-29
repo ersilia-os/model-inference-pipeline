@@ -8,28 +8,19 @@ import pandas as pd
 from config.app import DataLakeConfig
 
 
-class PredictionFetcher:
-    def __init__(self, config: DataLakeConfig, user_id: str, request_id: str, model_id: str, dev: bool = False):
+class LocalPredictionFetcher:
+    def __init__(self, config: DataLakeConfig, request_id: str, model_id: str, dev: bool = False):
         self.config = config
-        self.user_id = user_id
         self.request_id = request_id
         self.model_id = model_id
         self.dev = dev
 
-        self.logger = logging.getLogger("PredictionFetcher")
+        self.logger = logging.getLogger("LocalPredictionFetcher")
         self.logger.setLevel(logging.INFO)
 
         if self.dev:
             logging.basicConfig(stream=sys.stdout, level=logging.INFO)
             logging.getLogger("botocore").setLevel(logging.WARNING)
-
-    def check_availability(self) -> str:
-        # TODO: figure out how we are going to check for available models
-        # talk to Nicholas about the order of events here
-
-        # we need to reference the metadata table here, it can also be an athena table
-
-        return f"{self.model_id} available in prediction store"
 
     def get_s3_input_location(self) -> str:
         return os.path.join(
@@ -83,9 +74,8 @@ class PredictionFetcher:
         # ------------------------------------------------------
 
         df["request_id"] = self.request_id
-        df["user_id"] = self.user_id
 
-        return df[["user_id", "request_id", "smiles"]]
+        return df[["request_id", "smiles"]]
 
     def _write_inputs_s3(self, input_df: pd.DataFrame) -> None:
         # TODO: deduplicate repeated inputs
@@ -99,7 +89,7 @@ class PredictionFetcher:
             dataset=True,
             database=self.config.athena_database,
             table=self.config.athena_request_table,
-            partition_cols=["user_id", "request_id"],
+            partition_cols=["request_id"],
         )
 
     def _read_predictions_from_s3(self) -> pd.DataFrame:
@@ -111,7 +101,6 @@ class PredictionFetcher:
                     requests
                 where
                     request_id = '{self.request_id}'
-                    and user_id = '{self.user_id}'
             )
 
             select
