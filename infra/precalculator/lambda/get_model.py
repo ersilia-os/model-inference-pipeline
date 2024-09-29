@@ -10,7 +10,7 @@ def handler(event: dict, context: dict) -> bool:
         context (dict): _description_
 
     Returns:
-        has_model (bool): _description_
+        has_model (bool): whether or not precalculations for the model exist
     """
     model_id = event["queryStringParameters"]["modelid"]
     glue_client = boto3.client("glue")

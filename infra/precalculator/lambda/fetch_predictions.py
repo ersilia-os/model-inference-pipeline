@@ -13,7 +13,7 @@ def handler(event: dict, context: dict) -> dict:
         model_id (str): _description_
 
     Returns:
-        pd.DataFrame: _description_
+        pd.DataFrame: predictions
     """
     request_id = event["queryStringParameters"]["requestid"]
     model_id = event["queryStringParameters"]["modelid"]
