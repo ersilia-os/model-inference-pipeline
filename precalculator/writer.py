@@ -36,7 +36,23 @@ class PredictionWriter:
             logging.getLogger("botocore").setLevel(logging.WARNING)
 
     # def write_metadata(self, bucket: str, metadata_key: str, metadata: Metadata) -> None:
-    #     self.s3.put_object(Bucket=bucket, Key=metadata_key, Body=json.dumps(metadata.model_dump_json()))
+    #     self.s3.put_object(Bucket=bucket, Key=metadata_key, Body=json.dumps(metadata.model_dump_json()))  
+
+    def save_csv_subset(self, csv_path, subset_columns=None, filter_condition=None, nrows=None) -> None:
+        df = pd.read_csv(csv_path)
+
+        if subset_columns is not None:
+            df = df[subset_columns]
+
+        if filter_condition is not None:
+            df = df.query(filter_condition)
+            
+        if nrows is not None:
+            df = df.head(nrows)
+
+        df.to_csv(csv_path, index=False)
+        
+        print(f"Subset saved to {csv_path} with {len(df)} rows and columns: {list(df.columns)}.")
 
     def fetch(self) -> str:
         """Fetch and split inputs for this worker, ready to pass to Ersilia CLI"""
@@ -52,8 +68,9 @@ class PredictionWriter:
             input_filename,
             INPUT_FILE_NAME,
         )
-
         logger.info(f"Downloaded {input_filename} from S3")
+        self.save_csv_subset(csv_path=input_filename, nrows=100)
+        logger.info(f"Rows filtered: {input_filename} to {100}")
 
         partition_metadata = self._split_csv()
 
