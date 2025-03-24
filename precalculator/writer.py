@@ -8,6 +8,7 @@ import awswrangler as wr
 import boto3
 import pandas as pd
 
+from typing import List
 from config.app import DataLakeConfig, WorkerConfig
 from precalculator.models import (
     Prediction,
@@ -36,9 +37,9 @@ class PredictionWriter:
             logging.getLogger("botocore").setLevel(logging.WARNING)
 
     # def write_metadata(self, bucket: str, metadata_key: str, metadata: Metadata) -> None:
-    #     self.s3.put_object(Bucket=bucket, Key=metadata_key, Body=json.dumps(metadata.model_dump_json()))  
+    #     self.s3.put_object(Bucket=bucket, Key=metadata_key, Body=json.dumps(metadata.model_dump_json()))
 
-    def save_csv_subset(self, csv_path, subset_columns=None, filter_condition=None, nrows=None) -> None:
+    def save_csv_subset(self, csv_path: str, subset_columns: List[str]=None, filter_condition: str=None, nrows: int=None) -> None:
         df = pd.read_csv(csv_path)
 
         if subset_columns is not None:
@@ -46,12 +47,12 @@ class PredictionWriter:
 
         if filter_condition is not None:
             df = df.query(filter_condition)
-            
+
         if nrows is not None:
             df = df.head(nrows)
 
         df.to_csv(csv_path, index=False)
-        
+
         print(f"Subset saved to {csv_path} with {len(df)} rows and columns: {list(df.columns)}.")
 
     def fetch(self) -> str:
