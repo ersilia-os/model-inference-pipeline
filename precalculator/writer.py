@@ -3,12 +3,12 @@ import logging
 import os
 import subprocess
 import sys
+from typing import List
 
 import awswrangler as wr
 import boto3
 import pandas as pd
 
-from typing import List
 from config.app import DataLakeConfig, WorkerConfig
 from precalculator.models import (
     Prediction,
@@ -39,7 +39,13 @@ class PredictionWriter:
     # def write_metadata(self, bucket: str, metadata_key: str, metadata: Metadata) -> None:
     #     self.s3.put_object(Bucket=bucket, Key=metadata_key, Body=json.dumps(metadata.model_dump_json()))
 
-    def save_csv_subset(self, csv_path: str, subset_columns: List[str]=None, filter_condition: str=None, nrows: int=None) -> None:
+    def save_csv_subset(
+        self,
+        csv_path: str,
+        subset_columns: List[str] | None = None,
+        filter_condition: str | None = None,
+        nrows: int | None = None,
+    ) -> None:
         df = pd.read_csv(csv_path)
 
         if subset_columns is not None:
