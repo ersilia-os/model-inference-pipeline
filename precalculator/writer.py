@@ -75,9 +75,9 @@ class PredictionWriter:
             input_filename,
             INPUT_FILE_NAME,
         )
-        logger.info(f"Downloaded {input_filename} from S3")
-        self.save_csv_subset(csv_path=input_filename, nrows=100)
-        logger.info(f"Rows filtered: {input_filename} to {100}")
+        # logger.info(f"Downloaded {input_filename} from S3")
+        # self.save_csv_subset(csv_path=input_filename, nrows=100)
+        # logger.info(f"Rows filtered: {input_filename} to {100}")
 
         partition_metadata = self._split_csv()
 

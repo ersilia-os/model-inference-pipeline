@@ -70,7 +70,8 @@ class PredictionFetcher:
         return output_presigned_url
 
     def _read_input_data(self, path_to_input: str):
-        """Reads input CSV from user and processes it for writing to the data lake
+        """
+        Reads input CSV from user and processes it for writing to the data lake
 
         Args:
             path_to_input (str): location of input CSV
