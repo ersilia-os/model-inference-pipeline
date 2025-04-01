@@ -60,7 +60,7 @@ test:
 # fetch ersilia model hub repo
 install-ersilia:
 	@if [ ! -d "./ersilia" ]; then \
-		git clone https://github.com/ersilia-os/ersilia.git@fix/isaura-dependecy-fix && poetry install; \
+		git clone -b fix/dependency-fix https://github.com/ersilia-os/ersilia.git && poetry install; \
 	fi
 
 ## hooks - run pre-commit git hooks on all files
