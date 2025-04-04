@@ -73,7 +73,8 @@ class PredictionWriter:
 
         logger.info(f"Calling Ersilia CLI for model {self.model_id}")
 
-        subprocess.run([".venv/bin/ersilia", "-v", "serve", self.model_id])  # type: ignore
+        subprocess.run([".venv/bin/ersilia", "-v", "fetch", self.model_id, "--from_github"])  # type: ignore
+        subprocess.run([".venv/bin/ersilia", "-v", "serve", self.model_id, "--no-cache"])  # type: ignore
         subprocess.run([".venv/bin/ersilia", "-v", "run", "-i", input_file_path, "-o", OUTPUT_FILE_NAME])
 
         return OUTPUT_FILE_NAME
