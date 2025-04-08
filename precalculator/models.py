@@ -5,8 +5,8 @@ from pydantic import BaseModel, Field
 class Prediction(BaseModel):
     """Dataclass to represent a single prediction"""
 
-    input_key: str
-    smiles: str
+    key: str
+    input: str
     output: dict
     model_id: str
 

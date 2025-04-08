@@ -272,8 +272,8 @@ class PrecalculatorStack(Stack):
                 partition_keys=[glue.CfnTable.ColumnProperty(name="model_id")],
                 storage_descriptor=glue.CfnTable.StorageDescriptorProperty(
                     columns=[
-                        glue.CfnTable.ColumnProperty(name="input_key", type="string"),
-                        glue.CfnTable.ColumnProperty(name="smiles", type="string"),
+                        glue.CfnTable.ColumnProperty(name="key", type="string"),
+                        glue.CfnTable.ColumnProperty(name="input", type="string"),
                         glue.CfnTable.ColumnProperty(name="output", type="string"),
                         glue.CfnTable.ColumnProperty(name="model_id", type="string"),
                     ],
@@ -300,7 +300,7 @@ class PrecalculatorStack(Stack):
                 partition_keys=[glue.CfnTable.ColumnProperty(name="request_id")],
                 storage_descriptor=glue.CfnTable.StorageDescriptorProperty(
                     columns=[
-                        glue.CfnTable.ColumnProperty(name="smiles", type="string"),
+                        glue.CfnTable.ColumnProperty(name="input", type="string"),
                         glue.CfnTable.ColumnProperty(name="request_id", type="string"),
                     ],
                     location=f"s3://{BUCKET_NAME}/{S3_INPUT_PREFIX}",
