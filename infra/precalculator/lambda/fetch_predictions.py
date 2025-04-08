@@ -79,24 +79,24 @@ class PredictionFetcher:
             pd.DataFrame: formatted data frame
         """
 
-        # expect just a list of SMILEs with no header
+        # expect just a list of input with no header
         df = wr.s3.read_csv(path=path_to_input, header=None)
-        df.rename(columns={0: "smiles"}, inplace=True)
+        df.rename(columns={0: "input"}, inplace=True)
 
-        # TODO: validate smiles?
+        # TODO: validate input?
         ## for example -----------------------------------------
         # cid = CompoundIdentifier()
-        # valid_smiles = df.apply(lambda x: cid._is_smiles(x))
+        # valid_input = df.apply(lambda x: cid._is_input(x))
 
-        # df_invalid = df[~valid_smiles]
+        # df_invalid = df[~valid_input]
         # # generate invalid request summary
 
-        # df = df[valid_smiles]
+        # df = df[valid_input]
         # ------------------------------------------------------
 
         df["request_id"] = self.request_id
 
-        return df[["smiles", "request_id"]]
+        return df[["input", "request_id"]]
 
     def _write_inputs_s3(self, input_df) -> None:
         # TODO: deduplicate repeated inputs
@@ -126,13 +126,13 @@ class PredictionFetcher:
             )
             select distinct
                 p.model_id,
-                p.input_key,
-                p.smiles,
+                p.key,
+                p.input,
                 p.output
             from
                 predictions p
                 left join request r
-                    on p.smiles = r.smiles
+                    on p.input = r.input
             where
                 p.model_id = '{self.model_id}'
         """

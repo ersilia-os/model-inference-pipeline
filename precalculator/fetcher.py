@@ -58,24 +58,24 @@ class LocalPredictionFetcher:
             pd.DataFrame: formatted data frame
         """
 
-        # expect just a list of SMILEs with no header
+        # expect just a list of input with no header
         df = pd.read_csv(path_to_input, header=None)
-        df.rename(columns={0: "smiles"}, inplace=True)
+        df.rename(columns={0: "input"}, inplace=True)
 
-        # TODO: validate smiles?
+        # TODO: validate input?
         ## for example -----------------------------------------
         # cid = CompoundIdentifier()
-        # valid_smiles = df.apply(lambda x: cid._is_smiles(x))
+        # valid_input = df.apply(lambda x: cid._is_input(x))
 
-        # df_invalid = df[~valid_smiles]
+        # df_invalid = df[~valid_input]
         # # generate invalid request summary
 
-        # df = df[valid_smiles]
+        # df = df[valid_input]
         # ------------------------------------------------------
 
         df["request_id"] = self.request_id
 
-        return df[["request_id", "smiles"]]
+        return df[["request_id", "input"]]
 
     def _write_inputs_s3(self, input_df: pd.DataFrame) -> None:
         # TODO: deduplicate repeated inputs
@@ -105,13 +105,13 @@ class LocalPredictionFetcher:
 
             select
                 p.model_id,
-                p.input_key,
-                p.smiles,
+                p.key,
+                p.input,
                 p.output
             from
                 predictions p
-                left join request r
-                    on p.smiles = r.smiles
+                inner join request r
+                    on p.input = r.input
             where
                 and p.model_id = '{self.model_id}'
         """
