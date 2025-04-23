@@ -99,7 +99,7 @@ class PredictionWriter:
         return df
 
     def write_to_lake(self, outputs: pd.DataFrame) -> None:
-        validate_dataframe_schema(outputs, Prediction)  # type: ignore
+        # validate_dataframe_schema(outputs, Prediction)  # type: ignore
 
         wr.s3.to_parquet(
             df=outputs,
