@@ -94,13 +94,7 @@ class PredictionWriter:
 
         df = pd.read_csv(ersilia_output_path)
 
-        output_cols = df.columns[2:]
-        output_records = df[output_cols].to_dict(orient="records")
-
-        df["output"] = output_records
         df["model_id"] = self.model_id
-        df = df[["key", "input", "output", "model_id"]]
-        df = df.rename(columns={"key": "key", "input": "input"})
 
         return df
 
@@ -118,6 +112,7 @@ class PredictionWriter:
             database=self.data_config.athena_database,
             table=self.data_config.athena_prediction_table,
             partition_cols=["model_id"],
+            
         )
 
     def _split_csv(self) -> tuple[int, int]:
