@@ -96,11 +96,14 @@ class PredictionWriter:
 
         df["output"] = (
             df["output"]
-            .apply(ast.literal_eval)       
-            .apply(lambda d: list(d.values()))  
+            .apply(ast.literal_eval)                              
+            .apply(lambda d: ", ".join(str(v) for v in d.values()))  
         )
+
         df["model_id"] = self.model_id
+
         return df[["key", "input", "output", "model_id"]]
+
 
     def write_to_lake(self, outputs: pd.DataFrame) -> None:
         # validate_dataframe_schema(outputs, Prediction)  # type: ignore
