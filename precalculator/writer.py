@@ -1,4 +1,5 @@
 # import json
+import ast
 import logging
 import os
 import subprocess
@@ -92,19 +93,23 @@ class PredictionWriter:
         logger.info("Postprocessing outputs from Ersilia model")
 
         df = pd.read_csv(ersilia_output_path)
-        output_cols = df.columns[2:]
 
-        if len(output_cols) == 1:
-            df["output"] = df[output_cols[0]]
+        if "output" in df.columns and df["output"].dtype == object:
+            df["output"] = (
+                df["output"]
+                .apply(ast.literal_eval)             
+                .apply(lambda d: list(d.values()))   
+            )
+
         else:
-            output_records = df[output_cols].to_dict(orient="records")
-            df["output"] = [list(rec.values())[0] for rec in output_records]
+            output_cols = df.columns[2:]
+            df["output"] = (
+                df[output_cols]
+                .apply(lambda row: list(row.values()), axis=1)
+            )
 
         df["model_id"] = self.model_id
-
-        df = df[["key", "input", "output", "model_id"]]
-
-        return df
+        return df[["key", "input", "output", "model_id"]]
 
     def write_to_lake(self, outputs: pd.DataFrame) -> None:
         # validate_dataframe_schema(outputs, Prediction)  # type: ignore
