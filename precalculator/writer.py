@@ -88,19 +88,26 @@ class PredictionWriter:
         Returns:
             pd.DataFrame: postprocessed dataframe of outputs
         """
-
         logger = self.logger
         logger.info("Postprocessing outputs from Ersilia model")
 
         df = pd.read_csv(ersilia_output_path)
+        output_cols = df.columns[2:]
+
+        if len(output_cols) == 1:
+            df["output"] = df[output_cols[0]]
+        else:
+            output_records = df[output_cols].to_dict(orient="records")
+            df["output"] = [list(rec.values())[0] for rec in output_records]
 
         df["model_id"] = self.model_id
+
+        df = df[["key", "input", "output", "model_id"]]
 
         return df
 
     def write_to_lake(self, outputs: pd.DataFrame) -> None:
-        # validate_dataframe_schema(outputs, Prediction)  # type: ignore
-
+        validate_dataframe_schema(outputs, Prediction)  # type: ignore
         wr.s3.to_parquet(
             df=outputs,
             path=os.path.join(
