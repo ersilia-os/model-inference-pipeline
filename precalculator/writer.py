@@ -94,20 +94,11 @@ class PredictionWriter:
 
         df = pd.read_csv(ersilia_output_path)
 
-        if "output" in df.columns and df["output"].dtype == object:
-            df["output"] = (
-                df["output"]
-                .apply(ast.literal_eval)             
-                .apply(lambda d: list(d.values()))   
-            )
-
-        else:
-            output_cols = df.columns[2:]
-            df["output"] = (
-                df[output_cols]
-                .apply(lambda row: list(row.values()), axis=1)
-            )
-
+        df["output"] = (
+            df["output"]
+            .apply(ast.literal_eval)       
+            .apply(lambda d: list(d.values()))  
+        )
         df["model_id"] = self.model_id
         return df[["key", "input", "output", "model_id"]]
 
