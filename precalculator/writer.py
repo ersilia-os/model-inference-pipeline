@@ -93,7 +93,10 @@ class PredictionWriter:
         logger.info("Postprocessing outputs from Ersilia model")
 
         df = pd.read_csv(ersilia_output_path)
+        output_cols = df.columns[2:]
+        output_records = df[output_cols].to_dict(orient="records")
 
+        df["output"] = output_records
         df["output"] = (
             df["output"]
             .apply(ast.literal_eval)                              
