@@ -93,18 +93,12 @@ class PredictionWriter:
         logger.info("Postprocessing outputs from Ersilia model")
 
         df = pd.read_csv(ersilia_output_path)
-        output_cols = df.columns[2:]
-        output_records = df[output_cols].to_dict(orient="records")
 
-        df["output"] = output_records
-        df["output"] = (
-            df["output"]
-            .apply(ast.literal_eval)                              
-            .apply(lambda d: ", ".join(str(v) for v in d.values()))  
-        )
+        output_cols = [c for c in df.columns if c not in ("key", "input")]
+
+        df["output"] = df[output_cols].apply(lambda row: ", ".join(str(v) for v in row.values), axis=1)
 
         df["model_id"] = self.model_id
-
         return df[["key", "input", "output", "model_id"]]
 
 
