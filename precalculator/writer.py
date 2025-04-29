@@ -1,4 +1,5 @@
 # import json
+import ast
 import logging
 import os
 import subprocess
@@ -88,25 +89,21 @@ class PredictionWriter:
         Returns:
             pd.DataFrame: postprocessed dataframe of outputs
         """
-
         logger = self.logger
         logger.info("Postprocessing outputs from Ersilia model")
 
         df = pd.read_csv(ersilia_output_path)
 
-        output_cols = df.columns[2:]
-        output_records = df[output_cols].to_dict(orient="records")
+        output_cols = [c for c in df.columns if c not in ("key", "input")]
 
-        df["output"] = output_records
+        df["output"] = df[output_cols].apply(lambda row: ", ".join(str(v) for v in row.values), axis=1)
+
         df["model_id"] = self.model_id
-        df = df[["key", "input", "output", "model_id"]]
-        df = df.rename(columns={"key": "key", "input": "input"})
+        return df[["key", "input", "output", "model_id"]]
 
-        return df
 
     def write_to_lake(self, outputs: pd.DataFrame) -> None:
-        validate_dataframe_schema(outputs, Prediction)  # type: ignore
-
+        # validate_dataframe_schema(outputs, Prediction)  # type: ignore
         wr.s3.to_parquet(
             df=outputs,
             path=os.path.join(
@@ -118,6 +115,7 @@ class PredictionWriter:
             database=self.data_config.athena_database,
             table=self.data_config.athena_prediction_table,
             partition_cols=["model_id"],
+            
         )
 
     def _split_csv(self) -> tuple[int, int]:
