@@ -96,7 +96,7 @@ class PredictionWriter:
 
         output_cols = [c for c in df.columns if c not in ("key", "input")]
 
-        df["output"] = df[output_cols].apply(lambda row: ", ".join(str(v) for v in row.values), axis=1)
+        df["output"] = df[output_cols].apply(lambda row: ",".join(str(v) for v in row.values), axis=1)
 
         df["model_id"] = self.model_id
         return df[["key", "input", "output", "model_id"]]
